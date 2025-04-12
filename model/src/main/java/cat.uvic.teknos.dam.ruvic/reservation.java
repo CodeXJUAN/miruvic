@@ -1,3 +1,5 @@
-public class adress copy 4 {
+package cat.uvic.teknos.dam.ruvic;
+
+public class interface reservation {
     
 }

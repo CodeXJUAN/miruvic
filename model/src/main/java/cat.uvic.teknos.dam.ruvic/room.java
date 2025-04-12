@@ -1,3 +1,5 @@
-public class adress copy 6 {
+package cat.uvic.teknos.dam.ruvic;
+
+public class interface room {
     
 }

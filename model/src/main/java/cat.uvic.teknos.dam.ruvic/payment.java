@@ -3,7 +3,7 @@ package cat.uvic.teknos.dam.ruvic;
 import java.math.BigDecimal;
 import java.time.LocalDate; // Cambiado de Date a LocalDate para date SQL
 
-public class Payment {
+public class interface Payment {
     private int id;
     private Reservation reservation;
     private BigDecimal amount; // Cambiado de double a BigDecimal para decimal(6,2)

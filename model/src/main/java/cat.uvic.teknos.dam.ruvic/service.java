@@ -2,7 +2,7 @@ package cat.uvic.teknos.dam.ruvic;
 
 import java.math.BigDecimal;
 
-public class Service {
+public class interface Service {
     private int id;
     private String serviceName;
     private String description;

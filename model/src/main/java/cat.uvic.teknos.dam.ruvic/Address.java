@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.ruvic;
 
-public class Address {
+public class interface Address {
     private int id;
     private String street;
     private String city;

@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.ruvic;
 
-public class ReservationService {
+public class interface ReservationService {
     private Reservation reservation;
     private Service service;
 

@@ -2,7 +2,7 @@ package cat.uvic.teknos.dam.ruvic;
 
 import java.math.BigDecimal;
 
-public class interface Room {
+public interface Room {
     private int id;
     private String roomNumber;
     private int floor;

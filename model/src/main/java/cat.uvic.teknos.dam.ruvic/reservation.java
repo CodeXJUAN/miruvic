@@ -3,7 +3,7 @@ package cat.uvic.teknos.dam.ruvic;
 import java.time.LocalDate; // Cambiado de Date a LocalDate para date SQL
 import java.util.Set;
 
-public class interface Reservation {
+public interface Reservation {
     private int id;
     private Student student;
     private Room room;

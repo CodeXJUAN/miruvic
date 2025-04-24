@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.ruvic;
 
-public class interface Student {
+public interface Student {
     private int id;
     private String firstName;
     private String lastName;

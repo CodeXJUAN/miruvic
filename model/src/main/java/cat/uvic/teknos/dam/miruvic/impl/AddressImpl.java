@@ -1,6 +1,6 @@
-package miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.impl;
 
-public class AddressImpl implements Address {
+public class AddressImpl implements cat.uvic.teknos.dam.miruvic.Address {
     private int id;
     private String street;
     private String city;

@@ -1,8 +1,8 @@
-package miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.impl;
 
 import java.math.BigDecimal;
 
-public class ServiceImpl implements Service {
+public class ServiceImpl implements cat.uvic.teknos.dam.miruvic.Service {
     private int id;
     private String serviceName;
     private String description;

@@ -1,6 +1,9 @@
-package miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.impl;
 
-public class ReservationServiceImpl implements ReservationService {
+import cat.uvic.teknos.dam.miruvic.Reservation;
+import cat.uvic.teknos.dam.miruvic.Service;
+
+public class ReservationServiceImpl implements cat.uvic.teknos.dam.miruvic.ReservationService {
     private Reservation reservation;
     private Service service;
 

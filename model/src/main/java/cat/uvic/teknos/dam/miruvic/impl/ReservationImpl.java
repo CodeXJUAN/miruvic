@@ -1,9 +1,12 @@
 package cat.uvic.teknos.dam.miruvic.impl;
 
+import cat.uvic.teknos.dam.miruvic.Student;
+import cat.uvic.teknos.dam.miruvic.Room;
+import cat.uvic.teknos.dam.miruvic.Service;
 import java.time.LocalDate;
 import java.util.Set;
 
-public class ReservationImpl implements Reservation {
+public class ReservationImpl implements cat.uvic.teknos.dam.miruvic.Reservation {
     private int id;
     private Student student;
     private Room room;
@@ -82,8 +85,3 @@ public class ReservationImpl implements Reservation {
         this.services = services;
     }
 }
-
-// Enum para los estados de reserva
-enum ReservationStatus {
-    Pending, Confirmed, Cancelled
-}}

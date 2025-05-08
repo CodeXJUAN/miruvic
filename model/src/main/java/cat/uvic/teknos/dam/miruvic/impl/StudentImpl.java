@@ -1,8 +1,8 @@
-package miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.impl;
 
-import miruvic.Address;
-import miruvic.Room;
-import miruvic.Student;
+import cat.uvic.teknos.dam.miruvic.Address;
+import cat.uvic.teknos.dam.miruvic.Room;
+import cat.uvic.teknos.dam.miruvic.Student;
 
 public class StudentImpl implements Student {
     private int id;

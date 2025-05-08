@@ -1,7 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.impl;
 
 import cat.uvic.teknos.dam.miruvic.Address;
-import cat.uvic.teknos.dam.miruvic.Room;
 import cat.uvic.teknos.dam.miruvic.Student;
 
 public class StudentImpl implements Student {

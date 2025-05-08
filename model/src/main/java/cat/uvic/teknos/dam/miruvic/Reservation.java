@@ -1,4 +1,4 @@
-package miruvic;
+package cat.uvic.teknos.dam.miruvic;
 
 import java.time.LocalDate;
 import java.util.Set;

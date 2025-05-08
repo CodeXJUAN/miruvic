@@ -1,4 +1,6 @@
-package miruvic;
+package cat.uvic.teknos.dam.miruvic;
+
+;
 
 public interface ReservationService {
     Reservation getReservation();

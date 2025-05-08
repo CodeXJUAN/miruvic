@@ -1,7 +1,6 @@
 package miruvic;
 
 public interface Student {
-    // Métodos de la interfaz
     int getId();
 
     void setId(int id);

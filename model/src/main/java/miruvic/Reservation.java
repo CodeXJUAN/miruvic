@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 public interface Reservation {
-    // Métodos de la interfaz
     int getId();
 
     void setId(int id);

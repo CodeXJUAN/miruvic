@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface Payment {
-    // Métodos de la interfaz
     int getId();
 
     void setId(int id);

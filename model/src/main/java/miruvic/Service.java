@@ -3,7 +3,6 @@ package miruvic;
 import java.math.BigDecimal;
 
 public interface Service {
-    // Métodos de la interfaz
     int getId();
 
     void setId(int id);

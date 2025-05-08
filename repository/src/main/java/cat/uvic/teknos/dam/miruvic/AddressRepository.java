@@ -1,7 +1,6 @@
 package cat.uvic.teknos.dam.miruvic;
 
-public interface AddressRepository extends Repository<Integer, Address> {
-    // Puedes añadir métodos específicos para Address aquí si es necesario
+public interface AddressRepository<Address> extends Repository<Integer, Address> {
     java.util.List<Address> findByCity(String city);
 
     java.util.List<Address> findByPostalCode(String postalCode);

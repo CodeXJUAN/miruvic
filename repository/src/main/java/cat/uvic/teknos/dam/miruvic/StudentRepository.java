@@ -1,7 +1,7 @@
 package cat.uvic.teknos.dam.miruvic;
 
-public interface StudentRepository extends Repository<Integer, Student> {
-    // Puedes añadir métodos específicos para Student aquí si es necesario
+public interface StudentRepository<Student> extends Repository<Integer, Student> {
+
     java.util.List<Student> findByName(String name);
 
     java.util.List<Student> findByEmail(String email);

@@ -8,10 +8,12 @@ plugins {
 
 dependencies {
     implementation("org.apache.commons:commons-text")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.18.3")
+    implementation("com.mysql:mysql-connector-j:9.3.0")
     implementation(project(":utilities"))
 }
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.app.App"
+    mainClass = "cat.uvic.teknos.dam.ruvic"
 }

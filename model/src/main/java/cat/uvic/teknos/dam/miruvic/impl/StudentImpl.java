@@ -10,7 +10,7 @@ public class StudentImpl implements Student {
     private String email;
     private String passwordHash;
     private String phoneNumber;
-    private Address address;
+    private Address address_id;
 
     @Override
     public int getId() {
@@ -74,11 +74,11 @@ public class StudentImpl implements Student {
 
     @Override
     public Address getAddress() {
-        return address;
+        return address_id;
     }
 
     @Override
     public void setAddress(Address address) {
-        this.address = address;
+        this.address_id = address;
     }
 }

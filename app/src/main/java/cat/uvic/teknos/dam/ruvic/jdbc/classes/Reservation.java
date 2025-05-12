@@ -1,10 +1,16 @@
 package cat.uvic.teknos.dam.ruvic.jdbc.classes;
 
+import java.time.LocalDate;
+import java.util.Set;
+
 public class Reservation {
     private int id;
-    private String date;
-    private int roomId;
-    private int personId;
+    private Student student;
+    private Room room;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String status;
+    private Set<Service> services;
 
     public int getId() {
         return id;
@@ -14,27 +20,51 @@ public class Reservation {
         this.id = id;
     }
 
-    public String getDate() {
-        return date;
+    public Student getStudent() {
+        return student;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setStudent(Student student) {
+        this.student = student;
     }
 
-    public int getRoomId() {
-        return roomId;
+    public Room getRoom() {
+        return room;
     }
 
-    public void setRoomId(int roomId) {
-        this.roomId = roomId;
+    public void setRoom(Room room) {
+        this.room = room;
     }
 
-    public int getPersonId() {
-        return personId;
+    public LocalDate getStartDate() {
+        return startDate;
     }
 
-    public void setPersonId(int personId) {
-        this.personId = personId;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Set<Service> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<Service> services) {
+        this.services = services;
     }
 }

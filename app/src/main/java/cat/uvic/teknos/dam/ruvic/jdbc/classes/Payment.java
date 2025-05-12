@@ -1,31 +1,61 @@
 package cat.uvic.teknos.dam.ruvic.jdbc.classes;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 public class Payment {
-    private int id;
-    private double amount;
-    private String method;
+    private int id_payments;
+    private Reservation reservation_id;
+    private BigDecimal amount;
+    private LocalDate payment_date;
+    private String payment_method;
+    private String status;
 
     public int getId() {
-        return id;
+        return id_payments;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.id_payments = id;
     }
 
-    public double getAmount() {
+    public Reservation getReservation() {
+        return reservation_id;
+    }
+
+    public void setReservation(Reservation reservation) {
+        this.reservation_id = reservation;
+    }
+
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public String getMethod() {
-        return method;
+    public LocalDate getPaymentDate() {
+        return payment_date;
     }
 
-    public void setMethod(String method) {
-        this.method = method;
+    public void setPaymentDate(LocalDate paymentDate) {
+        this.payment_date = paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return payment_method;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.payment_method = paymentMethod;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

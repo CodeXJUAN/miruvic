@@ -1,9 +1,12 @@
 package cat.uvic.teknos.dam.ruvic.jdbc.classes;
 
+import java.math.BigDecimal;
+
 public class Service {
     private int id;
-    private String name;
+    private String serviceName;
     private String description;
+    private BigDecimal price;
 
     public int getId() {
         return id;
@@ -13,12 +16,12 @@ public class Service {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public String getDescription() {
@@ -27,5 +30,13 @@ public class Service {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 }

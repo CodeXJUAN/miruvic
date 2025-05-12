@@ -1,17 +1,19 @@
 package cat.uvic.teknos.dam.ruvic.jdbc.classes;
 
 public class Address {
-    private int id;
+    private int id_addresses;
     private String street;
     private String city;
+    private String state;
     private String zipCode;
+    private String country;
 
-    public int getId() {
-        return id;
+	public int getId() {
+        return id_addresses;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.id_addresses = id;
     }
 
     public String getStreet() {
@@ -36,5 +38,21 @@ public class Address {
 
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

@@ -1,18 +1,17 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.datasources;
 
+import java.sql.*;
+import java.util.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
+import cat.uvic.teknos.dam.miruvic.datasources.DataSource;
 
 public class SingleConnection implements DataSource {
     private Connection connection;
     private final String driver;
     private final String server;
     private final String database;
-    private final String user;
+    private final String username;
     private final String password;
 
     public SingleConnection() {
@@ -25,19 +24,20 @@ public class SingleConnection implements DataSource {
         driver = properties.getProperty("driver");
         server = properties.getProperty("server");
         database = properties.getProperty("database");
-        user = properties.getProperty("user");
+        username = properties.getProperty("username");
         password = properties.getProperty("password");
     }
 
-    @Override    
-    public Connection getConnection(){        
-        if (connection == null) {            
-            try {                
-                connection = DriverManager.getConnection(String.format("jdbc:%s://%s/%s",driver,server,database),user,password);            
-            } catch (SQLException e) {               
-                throw new RuntimeException(e);            
-            }        
-        }        
-        return connection;    
+    @Override
+    public Connection getConnection() {
+        if (connection == null) {
+            try {
+                connection = DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                        username, password);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return connection;
     }
 }

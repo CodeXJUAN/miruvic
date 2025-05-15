@@ -9,4 +9,5 @@ plugins {
 dependencies {
     implementation(project(":model"))
     implementation(project(":repository"))
+    implementation("com.mysql:mysql-connector-j:9.3.0")
 }

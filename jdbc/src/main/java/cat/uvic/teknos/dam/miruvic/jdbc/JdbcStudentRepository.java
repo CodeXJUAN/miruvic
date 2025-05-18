@@ -2,13 +2,26 @@ package cat.uvic.teknos.dam.miruvic.jdbc;
 
 import java.sql.*;
 import java.util.*;
+import java.io.*;
 import cat.uvic.teknos.dam.miruvic.Student;
 import cat.uvic.teknos.dam.miruvic.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.StudentRepository;
 
-public class JdbcStudentRepository implements StudentRepository {
+public class JdbcStudentRepository implements StudentRepository<Student> {
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/RUVIC", "root", "rootpassword");
+        var properties = new Properties();
+        try {
+            properties.load(new FileInputStream("datasoruce.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String driver = properties.getProperty("driver");
+        String server = properties.getProperty("server");
+        String database = properties.getProperty("database");
+        String username = properties.getProperty("username");
+        String password = properties.getProperty("password");
+        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                username, password);
     }
 
     @Override
@@ -20,7 +33,7 @@ public class JdbcStudentRepository implements StudentRepository {
             sql = "UPDATE STUDENT SET name = ?, surname = ?, email = ? WHERE id = ?";
         }
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, student.getName());
             stmt.setString(2, student.getSurname());
             stmt.setString(3, student.getEmail());
@@ -44,7 +57,7 @@ public class JdbcStudentRepository implements StudentRepository {
     public void delete(Student student) {
         String sql = "DELETE FROM STUDENT WHERE id = ?";
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, student.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -56,7 +69,7 @@ public class JdbcStudentRepository implements StudentRepository {
     public Student get(int id) {
         String sql = "SELECT * FROM STUDENT WHERE id = ?";
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -79,8 +92,8 @@ public class JdbcStudentRepository implements StudentRepository {
         List<Student> students = new ArrayList<>();
         String sql = "SELECT * FROM STUDENT";
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Student student = new Student();
                 student.setId(rs.getInt("id"));

@@ -2,14 +2,27 @@ package cat.uvic.teknos.dam.miruvic.jdbc;
 
 import java.sql.*;
 import java.util.*;
+import java.io.*;
 import cat.uvic.teknos.dam.miruvic.Room;
 import cat.uvic.teknos.dam.miruvic.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.RoomRepository;
 
-public class JdbcRoomRepository implements RoomRepository {
+public class JdbcRoomRepository implements RoomRepository<Room> {
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/RUVIC", "root", "rootpassword");
+        var properties = new Properties();
+        try {
+            properties.load(new FileInputStream("datasoruce.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        String driver = properties.getProperty("driver");
+        String server = properties.getProperty("server");
+        String database = properties.getProperty("database");
+        String username = properties.getProperty("username");
+        String password = properties.getProperty("password");
+        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                username, password);
     }
 
     @Override

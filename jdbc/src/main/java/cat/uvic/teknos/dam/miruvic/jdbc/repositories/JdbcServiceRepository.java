@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.jdbc;
+package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
@@ -26,7 +26,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
 
     @Override
     public Service findByName(String name) {
-        String sql = "SELECT * FROM SERVICE WHERE service_name = ?";
+        String sql = "SELECT * FROM SERVICE WHERE name = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
@@ -34,7 +34,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
                 if (rs.next()) {
                     Service service = new Service();
                     service.setId(rs.getInt("id"));
-                    service.setServiceName(rs.getString("service_name"));
+                    service.setServiceName(rs.getString("name"));
                     service.setDescription(rs.getString("description"));
                     service.setPrice(rs.getBigDecimal("price"));
                     return service;
@@ -57,7 +57,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
                 while (rs.next()) {
                     Service service = new Service();
                     service.setId(rs.getInt("id"));
-                    service.setServiceName(rs.getString("service_name"));
+                    service.setServiceName(rs.getString("name"));
                     service.setDescription(rs.getString("description"));
                     service.setPrice(rs.getBigDecimal("price"));
                     services.add(service);

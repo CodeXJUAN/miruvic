@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.jdbc;
+package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;

@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.jdbc;
+package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
@@ -28,15 +28,18 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     public void save(Student student) {
         String sql;
         if (student.getId() == 0) {
-            sql = "INSERT INTO STUDENT (name, surname, email) VALUES (?, ?, ?)";
+            sql = "INSERT INTO STUDENT (first_name, last_name, email, password_hash, phone_number, address_id) VALUES (?, ?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE STUDENT SET name = ?, surname = ?, email = ? WHERE id = ?";
+            sql = "UPDATE STUDENT SET first_name = ?, last_name = ?, email = ?, password_hash = ?, phone_number = ?, address_id = ? WHERE id = ?";
         }
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, student.getName());
-            stmt.setString(2, student.getSurname());
+            stmt.setString(1, student.getFirstName());
+            stmt.setString(2, student.getLastName());
             stmt.setString(3, student.getEmail());
+            stmt.setString(4, student.getPasswordHash());
+            stmt.setString(5, student.getPhoneNumber());
+            stmt.setInt(6, student.getAddress());
             if (student.getId() != 0) {
                 stmt.setInt(4, student.getId());
             }
@@ -66,7 +69,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     }
 
     @Override
-    public Student get(int id) {
+    public Student getId(int id) {
         String sql = "SELECT * FROM STUDENT WHERE id = ?";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -75,9 +78,12 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 if (rs.next()) {
                     Student student = new Student();
                     student.setId(rs.getInt("id"));
-                    student.setName(rs.getString("name"));
-                    student.setSurname(rs.getString("surname"));
+                    student.setFirstName(rs.getString("first_name"));
+                    student.setLastName(rs.getString("last_name"));
                     student.setEmail(rs.getString("email"));
+                    student.setPasswordHash(rs.getString("password_hash"));
+                    student.setPhoneNumber(rs.getString("phone_number"));
+                    student.setAddress(rs.getInt("address_id"));
                     return student;
                 }
             }
@@ -97,9 +103,12 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             while (rs.next()) {
                 Student student = new Student();
                 student.setId(rs.getInt("id"));
-                student.setName(rs.getString("name"));
-                student.setSurname(rs.getString("surname"));
+                student.setFirstName(rs.getString("name"));
+                student.setLastName(rs.getString("surname"));
                 student.setEmail(rs.getString("email"));
+                student.setPasswordHash(rs.getString("password_hash"));
+                student.setPhoneNumber(rs.getString("phone_number"));
+                student.setAddress(rs.getInt("address_id"));
                 students.add(student);
             }
         } catch (SQLException e) {

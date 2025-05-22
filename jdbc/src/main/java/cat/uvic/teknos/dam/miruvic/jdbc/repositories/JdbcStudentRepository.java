@@ -3,14 +3,15 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import cat.uvic.teknos.dam.miruvic.Student;
-import cat.uvic.teknos.dam.miruvic.Address;
-import cat.uvic.teknos.dam.miruvic.impl.StudentImpl;
-import cat.uvic.teknos.dam.miruvic.impl.AddressImpl;
-import cat.uvic.teknos.dam.miruvic.StudentRepository;
+import cat.uvic.teknos.dam.miruvic.model.Student;
+import cat.uvic.teknos.dam.miruvic.model.Address;
+import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
+import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
+import cat.uvic.teknos.dam.miruvic.repositories.StudentRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
 public class JdbcStudentRepository implements StudentRepository<Student> {
-    private Connection getConnection() throws SQLException {
+    private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
@@ -22,8 +23,12 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
         String database = properties.getProperty("database");
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                username, password);
+        try {
+                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                        username, password);
+            } catch (SQLException e) {
+                throw new DataSourceException("Error connecting to database", e);
+            }
     }
 
     @Override
@@ -61,7 +66,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al guardar estudiante", e);
+            throw convertSQLException("Error al guardar estudiante", e);
         }
     }
 
@@ -73,7 +78,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             stmt.setInt(1, student.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error al eliminar estudiante", e);
+            throw convertSQLException("Error al eliminar estudiante", e);
         }
     }
 
@@ -105,7 +110,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al obtener estudiante", e);
+            throw convertSQLException("Error al obtener estudiante", e);
         }
         return null;
     }
@@ -137,7 +142,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 students.add(student);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al obtener todos los estudiantes", e);
+            throw convertSQLException("Error al obtener todos los estudiantes", e);
         }
         return students;
     }
@@ -174,7 +179,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar estudiantes por nombre", e);
+            throw convertSQLException("Error al buscar estudiantes por nombre", e);
         }
         return students;
     }
@@ -210,7 +215,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar estudiantes por email", e);
+            throw convertSQLException("Error al buscar estudiantes por email", e);
         }
         return students;
     }
@@ -246,7 +251,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al buscar estudiantes por matrícula", e);
+            throw convertSQLException("Error al buscar estudiantes por matrícula", e);
         }
         return students;
     }

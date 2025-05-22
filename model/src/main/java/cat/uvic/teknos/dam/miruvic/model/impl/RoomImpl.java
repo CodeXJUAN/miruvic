@@ -1,8 +1,9 @@
-package cat.uvic.teknos.dam.miruvic.model.simpl;
+package cat.uvic.teknos.dam.miruvic.model.impl;
 
+import cat.uvic.teknos.dam.miruvic.model.Room;
 import java.math.BigDecimal;
 
-public class RoomImpl implements cat.uvic.teknos.dam.miruvic.Room {
+public class RoomImpl implements Room {
     private int id;
     private String roomNumber;
     private int floor;

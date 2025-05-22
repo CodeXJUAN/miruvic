@@ -1,10 +1,11 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-import cat.uvic.teknos.dam.miruvic.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Payment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class PaymentImpl implements cat.uvic.teknos.dam.miruvic.Payment {
+public class PaymentImpl implements Payment {
     private int id;
     private Reservation reservation;
     private BigDecimal amount;

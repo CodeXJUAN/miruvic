@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
-import cat.uvic.teknos.dam.miruvic.Address;
+import cat.uvic.teknos.dam.miruvic.model.Address;
 
 public class JdbcAddress implements Address {
     private int id;

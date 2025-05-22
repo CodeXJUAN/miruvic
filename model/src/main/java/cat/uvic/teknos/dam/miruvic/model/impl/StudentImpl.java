@@ -1,7 +1,8 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-import cat.uvic.teknos.dam.miruvic.Address;
-import cat.uvic.teknos.dam.miruvic.Student;
+import java.util.Set;
+import cat.uvic.teknos.dam.miruvic.model.Address;
+import cat.uvic.teknos.dam.miruvic.model.Student;
 
 public class StudentImpl implements Student {
     private int id;
@@ -10,7 +11,7 @@ public class StudentImpl implements Student {
     private String email;
     private String passwordHash;
     private String phoneNumber;
-    private Address address_id;
+    private Set<Address> address_id;
 
     @Override
     public int getId() {
@@ -73,12 +74,12 @@ public class StudentImpl implements Student {
     }
 
     @Override
-    public Address getAddress() {
-        return address_id;
+    public Set<Address> getAddress() {
+        return address_id != null ? address_id : Set.of();
     }
 
     @Override
     public void setAddress(Address address) {
-        this.address_id = address;
+        this.address_id = address != null ? Set.of(address) : Set.of();
     }
 }

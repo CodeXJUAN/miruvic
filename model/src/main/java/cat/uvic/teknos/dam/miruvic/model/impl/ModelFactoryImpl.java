@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-import cat.uvic.teknos.dam.miruvic.model.*;
+import cat.uvic.teknos.dam.miruvic.model.ModelFactory;
 
 public class ModelFactoryImpl implements ModelFactory {
     @Override

@@ -1,7 +1,7 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
 import java.math.BigDecimal;
-import cat.uvic.teknos.dam.miruvic.Room;
+import cat.uvic.teknos.dam.miruvic.model.Room;
 
 public class JdbcRoom implements Room {
     private int id;

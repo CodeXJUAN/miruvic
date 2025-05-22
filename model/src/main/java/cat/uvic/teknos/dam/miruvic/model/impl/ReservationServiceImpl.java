@@ -1,29 +1,31 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-import cat.uvic.teknos.dam.miruvic.Reservation;
-import cat.uvic.teknos.dam.miruvic.Service;
+import java.util.Set;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Service;
+import cat.uvic.teknos.dam.miruvic.model.ReservationService;
 
-public class ReservationServiceImpl implements cat.uvic.teknos.dam.miruvic.ReservationService {
-    private Reservation reservation;
-    private Service service;
+public class ReservationServiceImpl implements ReservationService {
+    private Set<Reservation> reservation;
+    private Set<Service> service;
 
     @Override
-    public Reservation getReservation() {
-        return reservation;
+    public Set<Reservation> getReservation() {
+        return reservation != null ? reservation : Set.of();
     }
 
     @Override
     public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
+        this.reservation = reservation != null ? Set.of(reservation) : Set.of();
     }
 
     @Override
-    public Service getService() {
-        return service;
+    public Set<Service> getService() {
+        return service != null ? service : Set.of();
     }
 
     @Override
     public void setService(Service service) {
-        this.service = service;
+        this.service = service != null ? Set.of(service) : Set.of();
     }
 }

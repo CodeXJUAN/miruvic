@@ -6,10 +6,12 @@ import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
 import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
+
 
 public class JdbcAddressRepository implements AddressRepository<Address> {
 
-    private Connection getConnection() throws SQLException {
+    private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
@@ -21,8 +23,12 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
         String database = properties.getProperty("database");
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                username, password);
+        try {
+                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                        username, password);
+            } catch (SQLException e) {
+                throw new DataSourceException("Error connecting to database", e);
+            }
     }
 
     @Override
@@ -56,7 +62,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving address", e);
+            throw convertSQLException("Error saving address", e);
         }
     }
 
@@ -69,7 +75,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting address", e);
+            throw convertSQLException("Error deleting address", e);
         }
     }
 
@@ -94,7 +100,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting address", e);
+            throw convertSQLException("Error getting address", e);
         }
         return null;
     }
@@ -118,7 +124,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 addresses.add(address);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting all addresses", e);
+            throw convertSQLException("Error getting all addresses", e);
         }
         return addresses;
     }
@@ -145,7 +151,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding addresses by city", e);
+            throw convertSQLException("Error finding addresses by city", e);
         }
         return addresses;
     }
@@ -172,7 +178,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding addresses by postal code", e);
+            throw convertSQLException("Error finding addresses by postal code", e);
         }
         return addresses;
     }
@@ -199,7 +205,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding addresses by country", e);
+            throw convertSQLException("Error finding addresses by country", e);
         }
         return addresses;
     }

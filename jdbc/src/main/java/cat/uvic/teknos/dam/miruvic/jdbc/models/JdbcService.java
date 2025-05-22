@@ -1,7 +1,7 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
 import java.math.BigDecimal;
-import cat.uvic.teknos.dam.miruvic.Service;
+import cat.uvic.teknos.dam.miruvic.model.Service;
 
 public class JdbcService implements Service {
     private int id;

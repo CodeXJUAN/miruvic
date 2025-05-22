@@ -1,6 +1,8 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-public class AddressImpl implements cat.uvic.teknos.dam.miruvic.Address {
+import cat.uvic.teknos.dam.miruvic.model.Address;
+
+public class AddressImpl implements Address {
     private int id;
     private String street;
     private String city;

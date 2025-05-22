@@ -1,7 +1,7 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
-import cat.uvic.teknos.dam.miruvic.Reservation;
-import cat.uvic.teknos.dam.miruvic.Payment;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Payment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

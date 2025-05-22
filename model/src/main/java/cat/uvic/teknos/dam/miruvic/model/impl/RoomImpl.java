@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.model.simpl;
 
 import java.math.BigDecimal;
 

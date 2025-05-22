@@ -4,36 +4,36 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface Payment {
-    int getId();
+    public int getId();
 
-    void setId(int id);
+    public void setId(int id);
 
-    Reservation getReservation();
+    public Reservation getReservation();
 
-    void setReservation(Reservation reservation);
+    public void setReservation(Reservation reservation);
 
-    BigDecimal getAmount();
+    public BigDecimal getAmount();
 
-    void setAmount(BigDecimal amount);
+    public void setAmount(BigDecimal amount);
 
-    LocalDate getPaymentDate();
+    public LocalDate getPaymentDate();
 
-    void setPaymentDate(LocalDate paymentDate);
+    public void setPaymentDate(LocalDate paymentDate);
 
-    PaymentMethod getPaymentMethod();
+    public PaymentMethod getPaymentMethod();
 
-    void setPaymentMethod(PaymentMethod paymentMethod);
+    public void setPaymentMethod(PaymentMethod paymentMethod);
 
-    PaymentStatus getStatus();
+    public PaymentStatus getStatus();
 
-    void setStatus(PaymentStatus status);
+    public void setStatus(PaymentStatus status);
 
     // Enums para los métodos de pago y estados
-    enum PaymentMethod {
+    public enum PaymentMethod {
         Card, Transfer
     }
 
-    enum PaymentStatus {
+    public enum PaymentStatus {
         Completed, Pending
     }
 }

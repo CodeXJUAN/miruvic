@@ -1,31 +1,33 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
+import java.util.Set;
+
 public interface Student {
-    int getId();
+    public int getId();
 
-    void setId(int id);
+    public void setId(int id);
 
-    String getFirstName();
+    public String getFirstName();
 
-    void setFirstName(String firstName);
+    public void setFirstName(String firstName);
 
-    String getLastName();
+    public String getLastName();
 
-    void setLastName(String lastName);
+    public void setLastName(String lastName);
 
-    String getEmail();
+    public String getEmail();
 
-    void setEmail(String email);
+    public void setEmail(String email);
 
-    String getPasswordHash();
+    public String getPasswordHash();
 
-    void setPasswordHash(String passwordHash);
+    public void setPasswordHash(String passwordHash);
 
-    String getPhoneNumber();
+    public String getPhoneNumber();
 
-    void setPhoneNumber(String phoneNumber);
+    public void setPhoneNumber(String phoneNumber);
 
-    Address getAddress();
+    public Set<Address> getAddress();
 
-    void setAddress(Address address);
+    public void setAddress(Address address);
 }

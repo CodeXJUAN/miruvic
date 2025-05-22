@@ -4,36 +4,36 @@ import java.time.LocalDate;
 import java.util.Set;
 
 public interface Reservation {
-    int getId();
+    public int getId();
 
-    void setId(int id);
+    public void setId(int id);
 
-    Student getStudent();
+    public Set<Student> getStudent();
 
-    void setStudent(Student student);
+    public void setStudent(Student student);
 
-    Room getRoom();
+    public Set<Room> getRoom();
 
-    void setRoom(Room room);
+    public void setRoom(Room room);
 
-    LocalDate getStartDate();
+    public LocalDate getStartDate();
 
-    void setStartDate(LocalDate startDate);
+    public void setStartDate(LocalDate startDate);
 
-    LocalDate getEndDate();
+    public LocalDate getEndDate();
 
-    void setEndDate(LocalDate endDate);
+    public void setEndDate(LocalDate endDate);
 
-    ReservationStatus getStatus();
+    public ReservationStatus getStatus();
 
-    void setStatus(ReservationStatus status);
+    public void setStatus(ReservationStatus status);
 
-    Set<Service> getServices();
+    public Set<Service> getServices();
 
-    void setServices(Set<Service> services);
+    public void setServices(Set<Service> services);
 
     // Enum para los estados de reserva
-    enum ReservationStatus {
+    public enum ReservationStatus {
         Pending, Confirmed, Cancelled
     }
 }

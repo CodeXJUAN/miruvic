@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.impl;
+package cat.uvic.teknos.dam.miruvic.model.impl;
 
 public class AddressImpl implements cat.uvic.teknos.dam.miruvic.Address {
     private int id;

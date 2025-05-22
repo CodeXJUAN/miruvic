@@ -3,9 +3,9 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import cat.uvic.teknos.dam.miruvic.Payment;
-import cat.uvic.teknos.dam.miruvic.PaymentRepository;
-import cat.uvic.teknos.dam.miruvic.impl.PaymentImpl;
+import cat.uvic.teknos.dam.miruvic.model.Payment;
+import cat.uvic.teknos.dam.miruvic.repositories.PaymentRepository;
+import cat.uvic.teknos.dam.miruvic.model.impl.PaymentImpl;
 
 public class JdbcPaymentRepository implements PaymentRepository<Payment> {
     

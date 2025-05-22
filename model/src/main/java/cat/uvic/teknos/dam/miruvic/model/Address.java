@@ -1,27 +1,27 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
 public interface Address {
-    int getId();
+    public int getId();
 
-    void setId(int id);
+    public void setId(int id);
 
-    String getStreet();
+    public String getStreet();
 
-    void setStreet(String street);
+    public void setStreet(String street);
 
-    String getCity();
+    public String getCity();
 
-    void setCity(String city);
+    public void setCity(String city);
 
-    String getState();
+    public String getState();
 
-    void setState(String state);
+    public void setState(String state);
 
-    String getZipCode();
+    public String getZipCode();
 
-    void setZipCode(String zipCode);
+    public void setZipCode(String zipCode);
 
-    String getCountry();
+    public String getCountry();
 
-    void setCountry(String country);
+    public void setCountry(String country);
 }

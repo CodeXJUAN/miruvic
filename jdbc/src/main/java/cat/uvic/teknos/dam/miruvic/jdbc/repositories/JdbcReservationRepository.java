@@ -4,31 +4,35 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 import java.time.*;
-import cat.uvic.teknos.dam.miruvic.Reservation;
-import cat.uvic.teknos.dam.miruvic.Student;
-import cat.uvic.teknos.dam.miruvic.Room;
-import cat.uvic.teknos.dam.miruvic.Service;
-import cat.uvic.teknos.dam.miruvic.impl.ReservationImpl;
-import cat.uvic.teknos.dam.miruvic.impl.StudentImpl;
-import cat.uvic.teknos.dam.miruvic.impl.RoomImpl;
-import cat.uvic.teknos.dam.miruvic.ReservationRepository;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Student;
+import cat.uvic.teknos.dam.miruvic.model.Room;
+import cat.uvic.teknos.dam.miruvic.model.Service;
+import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
+import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
+import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
+import cat.uvic.teknos.dam.miruvic.repositories.ReservationRepository;
 
 public class JdbcReservationRepository implements ReservationRepository<Reservation> {
 
-    private Connection getConnection() throws SQLException {
+    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
         var properties = new Properties();
         try (FileInputStream fis = new FileInputStream("datasource.properties")) {
             properties.load(fis);
         } catch (IOException e) {
-            throw new RuntimeException("Error loading properties file", e);
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
         String database = properties.getProperty("database");
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                username, password);
+        try {
+            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                    username, password);
+        } catch (SQLException e) {
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
+        }
     }
 
     @Override
@@ -62,7 +66,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving reservation", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar la reserva", e);
         }
     }
 
@@ -75,7 +79,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting reservation", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar la reserva", e);
         }
     }
 
@@ -112,9 +116,9 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting reservation", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener la reserva", e);
         }
-        return null;
+        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Reserva", id);
     }
 
     @Override
@@ -148,7 +152,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 reservations.add(reservation);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting all reservations", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todas las reservas", e);
         }
         return reservations;
     }
@@ -188,7 +192,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding reservations by date", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar reservas por fecha", e);
         }
         return reservations;
     }
@@ -228,7 +232,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding reservations by student ID", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar reservas por ID de estudiante", e);
         }
         
         return reservations;

@@ -3,9 +3,9 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import cat.uvic.teknos.dam.miruvic.Address;
-import cat.uvic.teknos.dam.miruvic.AddressRepository;
-import cat.uvic.teknos.dam.miruvic.impl.AddressImpl;
+import cat.uvic.teknos.dam.miruvic.model.Address;
+import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
+import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 
 public class JdbcAddressRepository implements AddressRepository<Address> {
 

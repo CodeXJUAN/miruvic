@@ -1,6 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.repositories;
 
-import java.util.List;
+import java.util.Set;
 
 public interface Repository<K, V> {
     void save(V value);
@@ -9,5 +9,5 @@ public interface Repository<K, V> {
 
     V get(K id);
 
-    List<Student> getAll();
+    Set<V> getAll();
 }

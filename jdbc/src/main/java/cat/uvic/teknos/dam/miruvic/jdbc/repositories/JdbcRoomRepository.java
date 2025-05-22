@@ -3,26 +3,30 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import cat.uvic.teknos.dam.miruvic.Room;
-import cat.uvic.teknos.dam.miruvic.impl.RoomImpl;
-import cat.uvic.teknos.dam.miruvic.RoomRepository;
+import cat.uvic.teknos.dam.miruvic.model.Room;
+import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
+import cat.uvic.teknos.dam.miruvic.repositories.RoomRepository;
 
 public class JdbcRoomRepository implements RoomRepository<Room> {
 
-    private Connection getConnection() throws SQLException {
+    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
         String database = properties.getProperty("database");
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                username, password);
+        try {
+            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                    username, password);
+        } catch (SQLException e) {
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
+        }
     }
 
     @Override
@@ -54,7 +58,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving room", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar la habitación", e);
         }
     }
 
@@ -67,7 +71,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting room", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar la habitación", e);
         }
     }
 
@@ -90,9 +94,9 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting room", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener la habitación", e);
         }
-        return null;
+        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Habitación", id);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
                 rooms.add(room);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting all rooms", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todas las habitaciones", e);
         }
         return rooms;
     }

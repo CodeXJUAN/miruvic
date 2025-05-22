@@ -9,20 +9,24 @@ import cat.uvic.teknos.dam.miruvic.impl.ServiceImpl;
 import cat.uvic.teknos.dam.miruvic.ServiceRepository;
 
 public class JdbcServiceRepository implements ServiceRepository {
-    private Connection getConnection() throws SQLException {
+    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
         String database = properties.getProperty("database");
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
-        return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                username, password);
+        try {
+            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                    username, password);
+        } catch (SQLException e) {
+            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
+        }
     }
 
     @Override
@@ -54,7 +58,7 @@ public class JdbcServiceRepository implements ServiceRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error saving service", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar el servicio", e);
         }
     }
 
@@ -67,7 +71,7 @@ public class JdbcServiceRepository implements ServiceRepository {
             stmt.setInt(1, service.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting service", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar el servicio", e);
         }
     }
 
@@ -90,9 +94,9 @@ public class JdbcServiceRepository implements ServiceRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting service", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener el servicio", e);
         }
-        return null;
+        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Servicio", id);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class JdbcServiceRepository implements ServiceRepository {
                 services.add(service);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting all services", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todos los servicios", e);
         }
         return services;
     }
@@ -134,9 +138,9 @@ public class JdbcServiceRepository implements ServiceRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error finding service by name", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar servicio por nombre", e);
         }
-        return null;
+        throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException("Servicio con nombre '" + name + "' no encontrado");
     }
 
     @Override
@@ -156,7 +160,7 @@ public class JdbcServiceRepository implements ServiceRepository {
                 services.add(service);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error getting all services", e);
+            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todos los servicios", e);
         }
         return services;
     }

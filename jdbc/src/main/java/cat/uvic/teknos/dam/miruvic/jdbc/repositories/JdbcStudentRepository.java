@@ -4,14 +4,16 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 import cat.uvic.teknos.dam.miruvic.Student;
+import cat.uvic.teknos.dam.miruvic.Address;
 import cat.uvic.teknos.dam.miruvic.impl.StudentImpl;
+import cat.uvic.teknos.dam.miruvic.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.StudentRepository;
 
 public class JdbcStudentRepository implements StudentRepository<Student> {
     private Connection getConnection() throws SQLException {
         var properties = new Properties();
         try {
-            properties.load(new FileInputStream("datasoruce.properties"));
+            properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -39,9 +41,16 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             stmt.setString(3, student.getEmail());
             stmt.setString(4, student.getPasswordHash());
             stmt.setString(5, student.getPhoneNumber());
-            stmt.setInt(6, student.getAddress());
+            
+            // Obtener el ID de la dirección si existe
+            if (student.getAddress() != null) {
+                stmt.setInt(6, student.getAddress().getId());
+            } else {
+                stmt.setNull(6, java.sql.Types.INTEGER);
+            }
+            
             if (student.getId() != 0) {
-                stmt.setInt(4, student.getId());
+                stmt.setInt(7, student.getId());
             }
             stmt.executeUpdate();
             if (student.getId() == 0) {
@@ -52,7 +61,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al guardar estudiante", e);
         }
     }
 
@@ -64,31 +73,39 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             stmt.setInt(1, student.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al eliminar estudiante", e);
         }
     }
 
     @Override
-    public Student getId(int id) {
+    public Student get(Integer id) {
         String sql = "SELECT * FROM STUDENT WHERE id = ?";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Student student = new Student();
+                    Student student = new StudentImpl();
                     student.setId(rs.getInt("id"));
                     student.setFirstName(rs.getString("first_name"));
                     student.setLastName(rs.getString("last_name"));
                     student.setEmail(rs.getString("email"));
                     student.setPasswordHash(rs.getString("password_hash"));
                     student.setPhoneNumber(rs.getString("phone_number"));
-                    student.setAddress(rs.getInt("address_id"));
+                    
+                    // Crear objeto Address si hay un address_id
+                    int addressId = rs.getInt("address_id");
+                    if (!rs.wasNull()) {
+                        Address address = new AddressImpl();
+                        address.setId(addressId);
+                        student.setAddress(address);
+                    }
+                    
                     return student;
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al obtener estudiante", e);
         }
         return null;
     }
@@ -101,18 +118,135 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                Student student = new Student();
+                Student student = new StudentImpl();
                 student.setId(rs.getInt("id"));
-                student.setFirstName(rs.getString("name"));
-                student.setLastName(rs.getString("surname"));
+                student.setFirstName(rs.getString("first_name"));
+                student.setLastName(rs.getString("last_name"));
                 student.setEmail(rs.getString("email"));
                 student.setPasswordHash(rs.getString("password_hash"));
                 student.setPhoneNumber(rs.getString("phone_number"));
-                student.setAddress(rs.getInt("address_id"));
+                
+                // Crear objeto Address si hay un address_id
+                int addressId = rs.getInt("address_id");
+                if (!rs.wasNull()) {
+                    Address address = new AddressImpl();
+                    address.setId(addressId);
+                    student.setAddress(address);
+                }
+                
                 students.add(student);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al obtener todos los estudiantes", e);
+        }
+        return students;
+    }
+    
+    @Override
+    public List<Student> findByName(String name) {
+        List<Student> students = new ArrayList<>();
+        String sql = "SELECT * FROM STUDENT WHERE first_name LIKE ? OR last_name LIKE ?";
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + name + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Student student = new StudentImpl();
+                    student.setId(rs.getInt("id"));
+                    student.setFirstName(rs.getString("first_name"));
+                    student.setLastName(rs.getString("last_name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setPasswordHash(rs.getString("password_hash"));
+                    student.setPhoneNumber(rs.getString("phone_number"));
+                    
+                    // Crear objeto Address si hay un address_id
+                    int addressId = rs.getInt("address_id");
+                    if (!rs.wasNull()) {
+                        Address address = new AddressImpl();
+                        address.setId(addressId);
+                        student.setAddress(address);
+                    }
+                    
+                    students.add(student);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar estudiantes por nombre", e);
+        }
+        return students;
+    }
+    
+    @Override
+    public List<Student> findByEmail(String email) {
+        List<Student> students = new ArrayList<>();
+        String sql = "SELECT * FROM STUDENT WHERE email LIKE ?";
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + email + "%";
+            stmt.setString(1, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Student student = new StudentImpl();
+                    student.setId(rs.getInt("id"));
+                    student.setFirstName(rs.getString("first_name"));
+                    student.setLastName(rs.getString("last_name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setPasswordHash(rs.getString("password_hash"));
+                    student.setPhoneNumber(rs.getString("phone_number"));
+                    
+                    // Crear objeto Address si hay un address_id
+                    int addressId = rs.getInt("address_id");
+                    if (!rs.wasNull()) {
+                        Address address = new AddressImpl();
+                        address.setId(addressId);
+                        student.setAddress(address);
+                    }
+                    
+                    students.add(student);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar estudiantes por email", e);
+        }
+        return students;
+    }
+    
+    @Override
+    public List<Student> findByMatricula(String matricula) {
+        List<Student> students = new ArrayList<>();
+        String sql = "SELECT * FROM STUDENT WHERE matricula LIKE ?";
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + matricula + "%";
+            stmt.setString(1, searchPattern);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Student student = new StudentImpl();
+                    student.setId(rs.getInt("id"));
+                    student.setFirstName(rs.getString("first_name"));
+                    student.setLastName(rs.getString("last_name"));
+                    student.setEmail(rs.getString("email"));
+                    student.setPasswordHash(rs.getString("password_hash"));
+                    student.setPhoneNumber(rs.getString("phone_number"));
+                    
+                    // Crear objeto Address si hay un address_id
+                    int addressId = rs.getInt("address_id");
+                    if (!rs.wasNull()) {
+                        Address address = new AddressImpl();
+                        address.setId(addressId);
+                        student.setAddress(address);
+                    }
+                    
+                    students.add(student);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar estudiantes por matrícula", e);
         }
         return students;
     }

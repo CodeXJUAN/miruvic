@@ -12,7 +12,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     private Connection getConnection() throws SQLException {
         var properties = new Properties();
         try {
-            properties.load(new FileInputStream("datasoruce.properties"));
+            properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

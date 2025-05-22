@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic;
+package cat.uvic.teknos.dam.miruvic.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

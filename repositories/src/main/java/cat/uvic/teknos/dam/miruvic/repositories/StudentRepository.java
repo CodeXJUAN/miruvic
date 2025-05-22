@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic;
+package cat.uvic.teknos.dam.miruvic.repositories;
 
 public interface StudentRepository<Student> extends Repository<Integer, Student> {
 

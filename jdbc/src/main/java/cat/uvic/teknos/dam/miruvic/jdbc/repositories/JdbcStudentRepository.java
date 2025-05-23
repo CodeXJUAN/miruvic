@@ -8,9 +8,17 @@ import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.StudentRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
 public class JdbcStudentRepository implements StudentRepository<Student> {
+    
+    private final DataSource dataSource;
+
+    public JdbcStudentRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {

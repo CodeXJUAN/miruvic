@@ -6,9 +6,17 @@ import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.ServiceRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
 public class JdbcServiceRepository implements ServiceRepository<Service> {
+
+    private final DataSource dataSource;
+
+    public JdbcServiceRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {

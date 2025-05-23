@@ -7,9 +7,15 @@ import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
 import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
-
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 
 public class JdbcAddressRepository implements AddressRepository<Address> {
+
+    private final DataSource dataSource;
+
+    public JdbcAddressRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     private Connection getConnection() throws DataSourceException {
         var properties = new Properties();

@@ -7,9 +7,16 @@ import cat.uvic.teknos.dam.miruvic.model.Payment;
 import cat.uvic.teknos.dam.miruvic.repositories.PaymentRepository;
 import cat.uvic.teknos.dam.miruvic.model.impl.PaymentImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 
 public class JdbcPaymentRepository implements PaymentRepository<Payment> {
     
+    private final DataSource dataSource;
+
+    public JdbcPaymentRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {

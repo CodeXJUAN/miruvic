@@ -12,11 +12,12 @@ import cat.uvic.teknos.dam.miruvic.repositories.ServiceRepository;
 import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
 import cat.uvic.teknos.dam.miruvic.repositories.PaymentRepository;
 import cat.uvic.teknos.dam.miruvic.repositories.ReservationRepository;
+import cat.uvic.teknos.dam.miruvic.repositories.RepositoryFactory;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.SingleConnectionDataSource;
 
-public class JdbcRepositoryFactory {
+public class JdbcRepositoryFactory implements RepositoryFactory{
 
     private final DataSource dataSource;
 
@@ -25,32 +26,32 @@ public class JdbcRepositoryFactory {
     }
     
     @Override
-    public static RoomRepository<Room> getRoomRepository() {
+    public RoomRepository<Room> getRoomRepository() {
         return new JdbcRoomRepository(dataSource);
     }
     
     @Override
-    public static StudentRepository<Student> getStudentRepository() {
+    public StudentRepository<Student> getStudentRepository() {
         return new JdbcStudentRepository(dataSource);
     }
     
     @Override
-    public static ServiceRepository getServiceRepository() {
+    public ServiceRepository<Service> getServiceRepository() {
         return new JdbcServiceRepository(dataSource);
     }
     
     @Override
-    public static AddressRepository<Address> getAddressRepository() {
+    public AddressRepository<Address> getAddressRepository() {
         return new JdbcAddressRepository(dataSource);
     }
     
     @Override
-    public static PaymentRepository<Payment> getPaymentRepository() {
+    public PaymentRepository<Payment> getPaymentRepository() {
         return new JdbcPaymentRepository(dataSource);
     }
     
     @Override
-    public static ReservationRepository<Reservation> ReservationRepository() {
+    public ReservationRepository<Reservation> getReservationRepository() {
         return new JdbcReservationRepository(dataSource);
     }
 }

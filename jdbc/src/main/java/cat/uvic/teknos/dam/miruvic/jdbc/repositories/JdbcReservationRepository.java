@@ -13,8 +13,15 @@ import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.ReservationRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 
 public class JdbcReservationRepository implements ReservationRepository<Reservation> {
+
+    private final DataSource dataSource;
+
+    public JdbcReservationRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     private Connection getConnection() throws DataSourceException {
         var properties = new Properties();

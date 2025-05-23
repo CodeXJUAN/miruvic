@@ -1,16 +1,22 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
+import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.ModelFactory;
+import cat.uvic.teknos.dam.miruvic.model.Payment;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Room;
+import cat.uvic.teknos.dam.miruvic.model.Service;
+import cat.uvic.teknos.dam.miruvic.model.Student;
 
 public class ModelFactoryImpl implements ModelFactory {
     @Override
-    public Address newAddress(){
-        return new Address();
+    public Address newAddres(){
+        return new AddressImpl();
     }
 
     @Override
     public Student newStudent(){
-        return new Student();
+        return new StudentImpl();
     }
 
     @Override

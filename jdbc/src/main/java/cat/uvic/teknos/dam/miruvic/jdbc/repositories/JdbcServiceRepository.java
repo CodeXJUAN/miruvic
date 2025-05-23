@@ -3,18 +3,18 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import java.math.BigDecimal;
-import cat.uvic.teknos.dam.miruvic.Service;
-import cat.uvic.teknos.dam.miruvic.impl.ServiceImpl;
-import cat.uvic.teknos.dam.miruvic.ServiceRepository;
+import cat.uvic.teknos.dam.miruvic.model.Service;
+import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
+import cat.uvic.teknos.dam.miruvic.repositories.ServiceRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
-public class JdbcServiceRepository implements ServiceRepository {
-    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
+public class JdbcServiceRepository implements ServiceRepository<Service> {
+    private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
+            throw new DataSourceException("Error al cargar el archivo de propiedades", e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
@@ -25,7 +25,7 @@ public class JdbcServiceRepository implements ServiceRepository {
             return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
                     username, password);
         } catch (SQLException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
+            throw new DataSourceException("Error al conectar con la base de datos", e);
         }
     }
 
@@ -45,7 +45,7 @@ public class JdbcServiceRepository implements ServiceRepository {
             stmt.setBigDecimal(3, service.getPrice());
             
             if (service.getId() != 0) {
-                stmt.setInt(5, service.getId());
+                stmt.setInt(4, service.getId());
             }
             
             stmt.executeUpdate();
@@ -58,7 +58,7 @@ public class JdbcServiceRepository implements ServiceRepository {
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar el servicio", e);
+            throw new RepositoryException("Error al guardar el servicio", e);
         }
     }
 
@@ -71,7 +71,7 @@ public class JdbcServiceRepository implements ServiceRepository {
             stmt.setInt(1, service.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar el servicio", e);
+            throw new RepositoryException("Error al eliminar el servicio", e);
         }
     }
 
@@ -85,41 +85,16 @@ public class JdbcServiceRepository implements ServiceRepository {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Service service = new ServiceImpl();
-                    service.setId(rs.getInt("id"));
-                    service.setServiceName(rs.getString("name"));
-                    service.setDescription(rs.getString("description"));
-                    service.setPrice(rs.getBigDecimal("price"));
-                    return service;
+                    return mapResultSetToService(rs);
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener el servicio", e);
+            throw new RepositoryException("Error al obtener el servicio", e);
         }
-        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Servicio", id);
+        throw new EntityNotFoundException("Servicio no encontrado con el id:" + id);
     }
 
-    @Override
-    public List<Service> getAll() {
-        List<Service> services = new ArrayList<>();
-        String sql = "SELECT * FROM SERVICE";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                Service service = new ServiceImpl();
-                service.setId(rs.getInt("id"));
-                service.setServiceName(rs.getString("name"));
-                service.setDescription(rs.getString("description"));
-                service.setPrice(rs.getBigDecimal("price"));
-                services.add(service);
-            }
-        } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todos los servicios", e);
-        }
-        return services;
-    }
+
 
     @Override
     public Service findByName(String name) {
@@ -129,18 +104,13 @@ public class JdbcServiceRepository implements ServiceRepository {
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Service service = new ServiceImpl();
-                    service.setId(rs.getInt("id"));
-                    service.setServiceName(rs.getString("name"));
-                    service.setDescription(rs.getString("description"));
-                    service.setPrice(rs.getBigDecimal("price"));
-                    return service;
+                    return mapResultSetToService(rs);
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar servicio por nombre", e);
+            throw new RepositoryException("Error al buscar servicio por nombre", e);
         }
-        throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException("Servicio con nombre '" + name + "' no encontrado");
+        throw new EntityNotFoundException("Servicio con nombre '" + name + "' no encontrado");
     }
 
     @Override
@@ -152,16 +122,41 @@ public class JdbcServiceRepository implements ServiceRepository {
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                Service service = new ServiceImpl();
-                service.setId(rs.getInt("id"));
-                service.setServiceName(rs.getString("name"));
-                service.setDescription(rs.getString("description"));
-                service.setPrice(rs.getBigDecimal("price"));
-                services.add(service);
+                services.add(mapResultSetToService(rs));
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todos los servicios", e);
+            throw new RepositoryException("Error al obtener todos los servicios", e);
         }
         return services;
+    }
+    
+    @Override
+    public Service findByType(String type) {
+        String sql = "SELECT * FROM SERVICE WHERE type = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, type);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToService(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al buscar servicio por tipo", e);
+        }
+        throw new EntityNotFoundException("Servicio con tipo '" + type + "' no encontrado");
+    }
+    
+    private Service mapResultSetToService(ResultSet rs) {
+        try {
+            Service service = new ServiceImpl();
+            service.setId(rs.getInt("id"));
+            service.setServiceName(rs.getString("name"));
+            service.setDescription(rs.getString("description"));
+            service.setPrice(rs.getBigDecimal("price"));
+            return service;
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al mapear los datos del servicio", e);
+        }
     }
 }

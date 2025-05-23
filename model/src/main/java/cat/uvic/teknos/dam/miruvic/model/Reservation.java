@@ -1,5 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
+import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -25,15 +26,10 @@ public interface Reservation {
     public void setEndDate(LocalDate endDate);
 
     public ReservationStatus getStatus();
-
+    
     public void setStatus(ReservationStatus status);
 
     public Set<Service> getServices();
 
     public void setServices(Set<Service> services);
-
-    // Enum para los estados de reserva
-    public enum ReservationStatus {
-        Pending, Confirmed, Cancelled
-    }
 }

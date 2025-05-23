@@ -49,7 +49,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             
             // Obtener el ID de la dirección si existe
             if (student.getAddress() != null) {
-                stmt.setInt(6, student.getAddress().getId());
+                stmt.setInt(6, ((Student) student.getAddress()).getId());
             } else {
                 stmt.setNull(6, java.sql.Types.INTEGER);
             }
@@ -66,7 +66,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al guardar estudiante", e);
+            throw new DataSourceException("Error saving student", e);
         }
     }
 
@@ -78,8 +78,28 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             stmt.setInt(1, student.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw convertSQLException("Error al eliminar estudiante", e);
+            throw new RepositoryException("Error deleting student", e);
         }
+    }
+
+    private Student mapResultSetToStudent(ResultSet rs) throws SQLException {
+        Student student = new StudentImpl();
+        student.setId(rs.getInt("id"));
+        student.setFirstName(rs.getString("first_name"));
+        student.setLastName(rs.getString("last_name"));
+        student.setEmail(rs.getString("email"));
+        student.setPasswordHash(rs.getString("password_hash"));
+        student.setPhoneNumber(rs.getString("phone_number"));
+        
+        // Crear objeto Address si hay un address_id
+        int addressId = rs.getInt("address_id");
+        if (!rs.wasNull()) {
+            Address address = new AddressImpl();
+            address.setId(addressId);
+            student.setAddress(address);
+        }
+        
+        return student;
     }
 
     @Override
@@ -90,66 +110,34 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("id"));
-                    student.setFirstName(rs.getString("first_name"));
-                    student.setLastName(rs.getString("last_name"));
-                    student.setEmail(rs.getString("email"));
-                    student.setPasswordHash(rs.getString("password_hash"));
-                    student.setPhoneNumber(rs.getString("phone_number"));
-                    
-                    // Crear objeto Address si hay un address_id
-                    int addressId = rs.getInt("address_id");
-                    if (!rs.wasNull()) {
-                        Address address = new AddressImpl();
-                        address.setId(addressId);
-                        student.setAddress(address);
-                    }
-                    
-                    return student;
+                    return mapResultSetToStudent(rs);
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al obtener estudiante", e);
+            throw new RepositoryException("Error getting student", e);
         }
-        return null;
+        throw new EntityNotFoundException("Student not found with id: " + id);
     }
 
     @Override
-    public List<Student> getAll() {
-        List<Student> students = new ArrayList<>();
+    public Set<Student> getAll() {
+        Set<Student> students = new HashSet<>();
         String sql = "SELECT * FROM STUDENT";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                Student student = new StudentImpl();
-                student.setId(rs.getInt("id"));
-                student.setFirstName(rs.getString("first_name"));
-                student.setLastName(rs.getString("last_name"));
-                student.setEmail(rs.getString("email"));
-                student.setPasswordHash(rs.getString("password_hash"));
-                student.setPhoneNumber(rs.getString("phone_number"));
-                
-                // Crear objeto Address si hay un address_id
-                int addressId = rs.getInt("address_id");
-                if (!rs.wasNull()) {
-                    Address address = new AddressImpl();
-                    address.setId(addressId);
-                    student.setAddress(address);
-                }
-                
-                students.add(student);
+                students.add(mapResultSetToStudent(rs));
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al obtener todos los estudiantes", e);
+            throw new RepositoryException("Error getting all students", e);
         }
         return students;
     }
     
     @Override
-    public List<Student> findByName(String name) {
-        List<Student> students = new ArrayList<>();
+    public Student findByName(String name) {
+        Set<Student> students = new HashSet<>();
         String sql = "SELECT * FROM STUDENT WHERE first_name LIKE ? OR last_name LIKE ?";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -159,34 +147,18 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("id"));
-                    student.setFirstName(rs.getString("first_name"));
-                    student.setLastName(rs.getString("last_name"));
-                    student.setEmail(rs.getString("email"));
-                    student.setPasswordHash(rs.getString("password_hash"));
-                    student.setPhoneNumber(rs.getString("phone_number"));
-                    
-                    // Crear objeto Address si hay un address_id
-                    int addressId = rs.getInt("address_id");
-                    if (!rs.wasNull()) {
-                        Address address = new AddressImpl();
-                        address.setId(addressId);
-                        student.setAddress(address);
-                    }
-                    
-                    students.add(student);
+                    students.add(mapResultSetToStudent(rs));
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al buscar estudiantes por nombre", e);
+            throw new RepositoryException("Error al buscar estudiantes por nombre", e);
         }
-        return students;
+        return (Student) students;
     }
     
     @Override
-    public List<Student> findByEmail(String email) {
-        List<Student> students = new ArrayList<>();
+    public Student findByEmail(String email) {
+        Set<Student> students = new HashSet<>();
         String sql = "SELECT * FROM STUDENT WHERE email LIKE ?";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -195,64 +167,32 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("id"));
-                    student.setFirstName(rs.getString("first_name"));
-                    student.setLastName(rs.getString("last_name"));
-                    student.setEmail(rs.getString("email"));
-                    student.setPasswordHash(rs.getString("password_hash"));
-                    student.setPhoneNumber(rs.getString("phone_number"));
-                    
-                    // Crear objeto Address si hay un address_id
-                    int addressId = rs.getInt("address_id");
-                    if (!rs.wasNull()) {
-                        Address address = new AddressImpl();
-                        address.setId(addressId);
-                        student.setAddress(address);
-                    }
-                    
-                    students.add(student);
+                    students.add(mapResultSetToStudent(rs));
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al buscar estudiantes por email", e);
+            throw new RepositoryException("Error al buscar estudiantes por email", e);
         }
-        return students;
+        return (Student) students;
     }
     
     @Override
-    public List<Student> findByMatricula(String matricula) {
-        List<Student> students = new ArrayList<>();
-        String sql = "SELECT * FROM STUDENT WHERE matricula LIKE ?";
+    public Student findByPhone(String phone_number) {
+        Set<Student> students = new HashSet<>();
+        String sql = "SELECT * FROM STUDENT WHERE phone_number LIKE ?";
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-            String searchPattern = "%" + matricula + "%";
+            String searchPattern = "%" + phone_number + "%";
             stmt.setString(1, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("id"));
-                    student.setFirstName(rs.getString("first_name"));
-                    student.setLastName(rs.getString("last_name"));
-                    student.setEmail(rs.getString("email"));
-                    student.setPasswordHash(rs.getString("password_hash"));
-                    student.setPhoneNumber(rs.getString("phone_number"));
-                    
-                    // Crear objeto Address si hay un address_id
-                    int addressId = rs.getInt("address_id");
-                    if (!rs.wasNull()) {
-                        Address address = new AddressImpl();
-                        address.setId(addressId);
-                        student.setAddress(address);
-                    }
-                    
-                    students.add(student);
+                    students.add(mapResultSetToStudent(rs));
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error al buscar estudiantes por matrícula", e);
+            throw new RepositoryException("Error al buscar estudiantes por telefono", e);
         }
-        return students;
+        return (Student) students;
     }
 }

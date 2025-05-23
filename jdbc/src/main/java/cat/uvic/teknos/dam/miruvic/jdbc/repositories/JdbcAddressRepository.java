@@ -62,7 +62,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error saving address", e);
+            throw new DataSourceException("Error saving address", e);
         }
     }
 
@@ -75,7 +75,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw convertSQLException("Error deleting address", e);
+            throw new RepositoryException("Error deleting address", e);
         }
     }
 
@@ -100,7 +100,7 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error getting address", e);
+            throw new RepositoryException("Error getting address", e);
         }
         return null;
     }
@@ -124,14 +124,25 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 addresses.add(address);
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error getting all addresses", e);
+            throw new RepositoryException("Error getting all addresses", e);
         }
         return addresses;
     }
 
+    private Address mapResultSetToAddress(ResultSet rs) throws SQLException {
+        Address address = new AddressImpl();
+        address.setId(rs.getInt("id_addresses"));
+        address.setStreet(rs.getString("street"));
+        address.setCity(rs.getString("city"));
+        address.setState(rs.getString("state"));
+        address.setZipCode(rs.getString("zip_code"));
+        address.setCountry(rs.getString("country"));
+        return address;
+    }
+
     @Override
-    public List<Address> findByCity(String city) {
-        List<Address> addresses = new ArrayList<>();
+    public Address findByCity(String city) {
+        Set<Address> addresses = new HashSet<>();
         String sql = "SELECT * FROM ADDRESS WHERE city = ?";
         
         try (Connection conn = getConnection();
@@ -140,24 +151,17 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Address address = new AddressImpl();
-                    address.setId(rs.getInt("id_addresses"));
-                    address.setStreet(rs.getString("street"));
-                    address.setCity(rs.getString("city"));
-                    address.setState(rs.getString("state"));
-                    address.setZipCode(rs.getString("zip_code"));
-                    address.setCountry(rs.getString("country"));
-                    addresses.add(address);
+                    addresses.add(mapResultSetToAddress(rs));
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error finding addresses by city", e);
+            throw new RepositoryException("Error finding addresses by city", e);
         }
-        return addresses;
+        return (Address) addresses;
     }
 
     @Override
-    public List<Address> findByPostalCode(String postalCode) {
+    public Address findByPostalCode(String postalCode) {
         List<Address> addresses = new ArrayList<>();
         String sql = "SELECT * FROM ADDRESS WHERE zip_code = ?";
         
@@ -178,14 +182,14 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error finding addresses by postal code", e);
+            throw new RepositoryException("Error finding addresses by postal code", e);
         }
-        return addresses;
+        return (Address) addresses;
     }
 
     @Override
-    public List<Address> findByCountry(String country) {
-        List<Address> addresses = new ArrayList<>();
+    public Address findByCountry(String country) {
+        Set<Address> addresses = new HashSet<>();
         String sql = "SELECT * FROM ADDRESS WHERE country = ?";
         
         try (Connection conn = getConnection();
@@ -194,19 +198,12 @@ public class JdbcAddressRepository implements AddressRepository<Address> {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Address address = new AddressImpl();
-                    address.setId(rs.getInt("id_addresses"));
-                    address.setStreet(rs.getString("street"));
-                    address.setCity(rs.getString("city"));
-                    address.setState(rs.getString("state"));
-                    address.setZipCode(rs.getString("zip_code"));
-                    address.setCountry(rs.getString("country"));
-                    addresses.add(address);
+                    addresses.add(mapResultSetToAddress(rs));
                 }
             }
         } catch (SQLException e) {
-            throw convertSQLException("Error finding addresses by country", e);
+            throw new RepositoryException("Error finding addresses by country", e);
         }
-        return addresses;
+        return (Address) addresses;
     }
 }

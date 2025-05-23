@@ -5,5 +5,5 @@ public interface StudentRepository<Student> extends Repository<Integer, Student>
 
     Student findByEmail(String email);
     
-    Student findByMatricula(String matricula);
+    Student findByPhone(String phone_number);
 }

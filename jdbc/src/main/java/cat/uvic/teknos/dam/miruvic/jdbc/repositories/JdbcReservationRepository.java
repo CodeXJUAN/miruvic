@@ -5,22 +5,23 @@ import java.util.*;
 import java.io.*;
 import java.time.*;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.ReservationRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
 public class JdbcReservationRepository implements ReservationRepository<Reservation> {
 
-    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
+    private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
-        try (FileInputStream fis = new FileInputStream("datasource.properties")) {
-            properties.load(fis);
+        try {
+            properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
+            throw new RuntimeException(e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
@@ -28,11 +29,11 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
         String username = properties.getProperty("username");
         String password = properties.getProperty("password");
         try {
-            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                    username, password);
-        } catch (SQLException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
-        }
+                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
+                        username, password);
+            } catch (SQLException e) {
+                throw new DataSourceException("Error connecting to database", e);
+            }
     }
 
     @Override
@@ -46,8 +47,8 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
 
         try (Connection conn = getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, value.getStudent().getId());
-            stmt.setInt(2, value.getRoom().getId());
+            stmt.setInt(1, ((Reservation) value.getStudent()).getId());
+            stmt.setInt(2, ((Reservation) value.getRoom()).getId());
             stmt.setDate(3, java.sql.Date.valueOf(value.getStartDate()));
             stmt.setDate(4, java.sql.Date.valueOf(value.getEndDate()));
             stmt.setString(5, value.getStatus().toString());
@@ -66,7 +67,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar la reserva", e);
+            throw new DataSourceException("Error al guardar la reserva", e);
         }
     }
 
@@ -79,7 +80,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar la reserva", e);
+            throw new RepositoryException("Error al eliminar la reserva", e);
         }
     }
 
@@ -93,32 +94,13 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Reservation reservation = new ReservationImpl();
-                    reservation.setId(rs.getInt("id"));
-                    
-                    // Use implementation classes instead of interfaces
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("student_id"));
-                    reservation.setStudent(student);
-                    
-                    Room room = new RoomImpl();
-                    room.setId(rs.getInt("room_id"));
-                    reservation.setRoom(room);
-                    
-                    reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                    reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                    reservation.setStatus(ReservationStatus.valueOf(rs.getString("status")));
-                    
-                    // Aquí deberías cargar los servicios asociados a la reserva
-                    // Esto requeriría una consulta adicional
-                    
-                    return reservation;
+                    return mapResultSetToReservation(rs);
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener la reserva", e);
+            throw new RepositoryException("Error al obtener la reserva", e);
         }
-        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Reserva", id);
+        throw new EntityNotFoundException("Reservation not found with id: " + id);
     }
 
     @Override
@@ -130,36 +112,17 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                Reservation reservation = new ReservationImpl();
-                reservation.setId(rs.getInt("id"));
-                
-                // Use implementation classes instead of interfaces
-                Student student = new StudentImpl();
-                student.setId(rs.getInt("student_id"));
-                reservation.setStudent(student);
-                
-                Room room = new RoomImpl();
-                room.setId(rs.getInt("room_id"));
-                reservation.setRoom(room);
-                
-                reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                reservation.setStatus(ReservationStatus.valueOf(rs.getString("status")));
-                
-                // Aquí deberías cargar los servicios asociados a la reserva
-                // Esto requeriría una consulta adicional
-                
-                reservations.add(reservation);
+                reservations.add(mapResultSetToReservation(rs));
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todas las reservas", e);
+            throw new RepositoryException("Error al obtener todas las reservas", e);
         }
         return reservations;
     }
 
     @Override
-    public List<Reservation> findByDate(LocalDate date) {
-        List<Reservation> reservations = new ArrayList<>();
+    public Reservation findByDate(LocalDate date) {
+        Set<Reservation> reservations = new HashSet<>();
         String sql = "SELECT * FROM RESERVATION WHERE start_date <= ? AND end_date >= ?";
 
         try (Connection conn = getConnection();
@@ -169,37 +132,18 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Reservation reservation = new ReservationImpl();
-                    reservation.setId(rs.getInt("id"));
-                    
-                    // Use implementation classes instead of interfaces
-                    Student student = new StudentImpl();
-                    student.setId(rs.getInt("student_id"));
-                    reservation.setStudent(student);
-                    
-                    Room room = new RoomImpl();
-                    room.setId(rs.getInt("room_id"));
-                    reservation.setRoom(room);
-                    
-                    reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                    reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                    reservation.setStatus(ReservationStatus.valueOf(rs.getString("status")));
-                    
-                    // Aquí deberías cargar los servicios asociados a la reserva
-                    // Esto requeriría una consulta adicional
-                    
-                    reservations.add(reservation);
+                    reservations.add(mapResultSetToReservation(rs));
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar reservas por fecha", e);
+            throw new RepositoryException("Error al buscar reservas por fecha", e);
         }
-        return reservations;
+        return (Reservation) reservations;
     }
 
     @Override
-    public List<Reservation> findByStudentId(int studentId) {
-        List<Reservation> reservations = new ArrayList<>();
+    public Reservation findByStudentId(int studentId) {
+        Set<Reservation> reservations = new HashSet<>();
         String sql = "SELECT * FROM RESERVATION WHERE student_id = ?";
         
         try (Connection conn = getConnection();
@@ -208,33 +152,36 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    Reservation reservation = new ReservationImpl();
-                    reservation.setId(rs.getInt("id"));
-                    
-                    // Aquí deberías cargar el estudiante y la habitación completos
-                    // Esto es un ejemplo simplificado
-                    Student student = new Student();
-                    student.setId(rs.getInt("student_id"));
-                    reservation.setStudent(student);
-                    
-                    Room room = new Room();
-                    room.setId(rs.getInt("room_id"));
-                    reservation.setRoom(room);
-                    
-                    reservation.setStartDate(rs.getDate("start_date").toLocalDate());
-                    reservation.setEndDate(rs.getDate("end_date").toLocalDate());
-                    reservation.setStatus(ReservationStatus.valueOf(rs.getString("status")));
-                    
-                    // Aquí deberías cargar los servicios asociados a la reserva
-                    // Esto requeriría una consulta adicional
-                    
-                    reservations.add(reservation);
+                    reservations.add(mapResultSetToReservation(rs));
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al buscar reservas por ID de estudiante", e);
+            throw new RepositoryException("Error al buscar reservas por ID de estudiante", e);
         }
         
-        return reservations;
+        return (Reservation) reservations;
+    }
+    
+    private Reservation mapResultSetToReservation(ResultSet rs) {
+        try {
+            Reservation reservation = new ReservationImpl();
+            reservation.setId(rs.getInt("id"));
+            
+            Student student = new StudentImpl();
+            student.setId(rs.getInt("student_id"));
+            reservation.setStudent(student);
+            
+            Room room = new RoomImpl();
+            room.setId(rs.getInt("room_id"));
+            reservation.setRoom(room);
+            
+            reservation.setStartDate(rs.getDate("start_date").toLocalDate());
+            reservation.setEndDate(rs.getDate("end_date").toLocalDate());
+            reservation.setStatus(ReservationStatus.valueOf(rs.getString("status")));
+            
+            return reservation;
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al mapear los datos de la reserva", e);
+        }
     }
 }

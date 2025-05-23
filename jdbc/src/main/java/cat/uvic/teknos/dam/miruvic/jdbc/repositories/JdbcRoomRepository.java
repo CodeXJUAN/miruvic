@@ -4,17 +4,19 @@ import java.sql.*;
 import java.util.*;
 import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Room;
+import cat.uvic.teknos.dam.miruvic.model.Room.RoomType;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.RoomRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
 public class JdbcRoomRepository implements RoomRepository<Room> {
 
-    private Connection getConnection() throws cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException {
+    private Connection getConnection() throws DataSourceException {
         var properties = new Properties();
         try {
             properties.load(new FileInputStream("datasource.properties"));
         } catch (IOException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al cargar el archivo de propiedades", e);
+            throw new DataSourceException("Error al cargar el archivo de propiedades", e);
         }
         String driver = properties.getProperty("driver");
         String server = properties.getProperty("server");
@@ -25,7 +27,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
             return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
                     username, password);
         } catch (SQLException e) {
-            throw new cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException("Error al conectar con la base de datos", e);
+            throw new DataSourceException("Error al conectar con la base de datos", e);
         }
     }
 
@@ -33,19 +35,21 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     public void save(Room value) {
         String sql;
         if (value.getId() == 0) {
-            sql = "INSERT INTO ROOM (room_number, room_type, price) VALUES (?, ?, ?)";
+            sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price) VALUES (?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE ROOM SET room_number = ?, room_type = ?, price = ? WHERE id_room = ?";
+            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
         }
 
         try (Connection conn = getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, value.getRoomNumber());
-            stmt.setString(2, value.getRoomType());
-            stmt.setDouble(3, value.getPrice());
+            stmt.setInt(2, value.getFloor());
+            stmt.setInt(3, value.getCapacity());
+            stmt.setString(4, value.getType().toString());
+            stmt.setBigDecimal(5, value.getPrice());
 
             if (value.getId() != 0) {
-                stmt.setInt(4, value.getId());
+                stmt.setInt(6, value.getId());
             }
 
             stmt.executeUpdate();
@@ -58,7 +62,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al guardar la habitación", e);
+            throw new RepositoryException("Error al guardar la habitación", e);
         }
     }
 
@@ -71,7 +75,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al eliminar la habitación", e);
+            throw new RepositoryException("Error al eliminar la habitación", e);
         }
     }
 
@@ -85,18 +89,13 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Room room = new RoomImpl();
-                    room.setId(rs.getInt("id_room"));
-                    room.setRoomNumber(rs.getString("room_number"));
-                    room.setRoomType(rs.getString("room_type"));
-                    room.setPrice(rs.getDouble("price"));
-                    return room;
+                    return mapResultSetToRoom(rs);
                 }
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener la habitación", e);
+            throw new RepositoryException("Error al obtener la habitación", e);
         }
-        throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.createEntityNotFoundException("Habitación", id);
+        throw new EntityNotFoundException("Habitación no encontrada con id: " + id);
     }
 
     @Override
@@ -108,16 +107,64 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                Room room = new RoomImpl();
-                room.setId(rs.getInt("id_room"));
-                room.setRoomNumber(rs.getString("room_number"));
-                room.setRoomType(rs.getString("room_type"));
-                room.setPrice(rs.getDouble("price"));
-                rooms.add(room);
+                rooms.add(mapResultSetToRoom(rs));
             }
         } catch (SQLException e) {
-            throw cat.uvic.teknos.dam.miruvic.jdbc.exceptions.ExceptionUtils.convertSQLException("Error al obtener todas las habitaciones", e);
+            throw new RepositoryException("Error al obtener todas las habitaciones", e);
         }
         return rooms;
+    }
+    
+    @Override
+    public Room findByNumber(String number) {
+        String sql = "SELECT * FROM ROOM WHERE room_number = ?";
+
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, number);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToRoom(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al buscar habitación por número", e);
+        }
+        throw new EntityNotFoundException("Habitación no encontrada con número: " + number);
+    }
+
+    @Override
+    public Room findByType(String type) {
+        String sql = "SELECT * FROM ROOM WHERE room_type = ?";
+
+        try (Connection conn = getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, type);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToRoom(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al buscar habitación por tipo", e);
+        }
+        throw new EntityNotFoundException("Habitación no encontrada con tipo: " + type);
+    }
+    
+    private Room mapResultSetToRoom(ResultSet rs) {
+        try {
+            Room room = new RoomImpl();
+            room.setId(rs.getInt("id_room"));
+            room.setRoomNumber(rs.getString("room_number"));
+            room.setFloor(rs.getInt("floor"));
+            room.setCapacity(rs.getInt("capacity"));
+            room.setType(RoomType.valueOf(rs.getString("room_type")));
+            room.setPrice(rs.getBigDecimal("price"));
+            return room;
+        } catch (SQLException e) {
+            throw new RepositoryException("Error al mapear los datos de la habitación", e);
+        }
     }
 }

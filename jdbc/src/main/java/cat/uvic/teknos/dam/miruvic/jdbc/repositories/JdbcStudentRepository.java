@@ -2,7 +2,6 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
@@ -19,26 +18,6 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws DataSourceException {
-        var properties = new Properties();
-        try {
-            properties.load(new FileInputStream("datasource.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String driver = properties.getProperty("driver");
-        String server = properties.getProperty("server");
-        String database = properties.getProperty("database");
-        String username = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        try {
-                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                        username, password);
-            } catch (SQLException e) {
-                throw new DataSourceException("Error connecting to database", e);
-            }
-    }
-
     @Override
     public void save(Student student) {
         String sql;
@@ -47,7 +26,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
         } else {
             sql = "UPDATE STUDENT SET first_name = ?, last_name = ?, email = ?, password_hash = ?, phone_number = ?, address_id = ? WHERE id = ?";
         }
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, student.getFirstName());
             stmt.setString(2, student.getLastName());
@@ -81,7 +60,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     @Override
     public void delete(Student student) {
         String sql = "DELETE FROM STUDENT WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, student.getId());
             stmt.executeUpdate();
@@ -113,7 +92,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     @Override
     public Student get(Integer id) {
         String sql = "SELECT * FROM STUDENT WHERE id = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -131,7 +110,7 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     public Set<Student> getAll() {
         Set<Student> students = new HashSet<>();
         String sql = "SELECT * FROM STUDENT";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -145,62 +124,59 @@ public class JdbcStudentRepository implements StudentRepository<Student> {
     
     @Override
     public Student findByName(String name) {
-        Set<Student> students = new HashSet<>();
-        String sql = "SELECT * FROM STUDENT WHERE first_name LIKE ? OR last_name LIKE ?";
-        try (Connection conn = getConnection();
+        String sql = "SELECT * FROM STUDENT WHERE first_name LIKE ? OR last_name LIKE ? LIMIT 1";
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             String searchPattern = "%" + name + "%";
             stmt.setString(1, searchPattern);
             stmt.setString(2, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    students.add(mapResultSetToStudent(rs));
+                if (rs.next()) {
+                    return mapResultSetToStudent(rs);
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Error al buscar estudiantes por nombre", e);
+            throw new RepositoryException("Error al buscar estudiante por nombre", e);
         }
-        return (Student) students;
+        return null;
     }
     
     @Override
     public Student findByEmail(String email) {
-        Set<Student> students = new HashSet<>();
-        String sql = "SELECT * FROM STUDENT WHERE email LIKE ?";
-        try (Connection conn = getConnection();
+        String sql = "SELECT * FROM STUDENT WHERE email LIKE ? LIMIT 1";
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             String searchPattern = "%" + email + "%";
             stmt.setString(1, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    students.add(mapResultSetToStudent(rs));
+                if (rs.next()) {
+                    return mapResultSetToStudent(rs);
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Error al buscar estudiantes por email", e);
+            throw new RepositoryException("Error al buscar estudiante por email", e);
         }
-        return (Student) students;
+        return null;
     }
     
     @Override
     public Student findByPhone(String phone_number) {
-        Set<Student> students = new HashSet<>();
-        String sql = "SELECT * FROM STUDENT WHERE phone_number LIKE ?";
-        try (Connection conn = getConnection();
+        String sql = "SELECT * FROM STUDENT WHERE phone_number LIKE ? LIMIT 1";
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             String searchPattern = "%" + phone_number + "%";
             stmt.setString(1, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    students.add(mapResultSetToStudent(rs));
+                if (rs.next()) {
+                    return mapResultSetToStudent(rs);
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Error al buscar estudiantes por telefono", e);
+            throw new RepositoryException("Error al buscar estudiante por telefono", e);
         }
-        return (Student) students;
+        return null;
     }
 }

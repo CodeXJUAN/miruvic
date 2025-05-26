@@ -2,7 +2,6 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import java.time.*;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
@@ -23,26 +22,6 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws DataSourceException {
-        var properties = new Properties();
-        try {
-            properties.load(new FileInputStream("datasource.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String driver = properties.getProperty("driver");
-        String server = properties.getProperty("server");
-        String database = properties.getProperty("database");
-        String username = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        try {
-                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                        username, password);
-            } catch (SQLException e) {
-                throw new DataSourceException("Error connecting to database", e);
-            }
-    }
-
     @Override
     public void save(Reservation value) {
         String sql;
@@ -52,7 +31,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
             sql = "UPDATE RESERVATION SET student_id = ?, room_id = ?, start_date = ?, end_date = ?, status = ? WHERE id = ?";
         }
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, ((Reservation) value.getStudent()).getId());
             stmt.setInt(2, ((Reservation) value.getRoom()).getId());
@@ -82,7 +61,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
     public void delete(Reservation value) {
         String sql = "DELETE FROM RESERVATION WHERE id = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
@@ -95,7 +74,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
     public Reservation get(Integer id) {
         String sql = "SELECT * FROM RESERVATION WHERE id = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
 
@@ -115,7 +94,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
         Set<Reservation> reservations = new HashSet<>();
         String sql = "SELECT * FROM RESERVATION";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -132,7 +111,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
         Set<Reservation> reservations = new HashSet<>();
         String sql = "SELECT * FROM RESERVATION WHERE start_date <= ? AND end_date >= ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, java.sql.Date.valueOf(date));
             stmt.setDate(2, java.sql.Date.valueOf(date));
@@ -153,7 +132,7 @@ public class JdbcReservationRepository implements ReservationRepository<Reservat
         Set<Reservation> reservations = new HashSet<>();
         String sql = "SELECT * FROM RESERVATION WHERE student_id = ?";
         
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, studentId);
             

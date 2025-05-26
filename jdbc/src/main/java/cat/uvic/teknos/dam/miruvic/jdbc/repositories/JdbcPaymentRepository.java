@@ -2,7 +2,6 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Payment;
 import cat.uvic.teknos.dam.miruvic.repositories.PaymentRepository;
 import cat.uvic.teknos.dam.miruvic.model.impl.PaymentImpl;
@@ -17,26 +16,6 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws DataSourceException {
-        var properties = new Properties();
-        try {
-            properties.load(new FileInputStream("datasource.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String driver = properties.getProperty("driver");
-        String server = properties.getProperty("server");
-        String database = properties.getProperty("database");
-        String username = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        try {
-                return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                        username, password);
-            } catch (SQLException e) {
-                throw new DataSourceException("Error connecting to database", e);
-            }
-    }
-
     @Override
     public void save(Payment value) {
         String sql;
@@ -46,7 +25,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
             sql = "UPDATE PAYMENT SET amount = ?, payment_date = ?, payment_method = ? WHERE id_payments = ?";
         }
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setBigDecimal(1, value.getAmount());
             stmt.setDate(2, java.sql.Date.valueOf(value.getPaymentDate()));
@@ -72,7 +51,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
 
     @Override
     public void delete(Payment value) {
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM PAYMENT WHERE id_payments = ?")) {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
@@ -83,7 +62,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
 
     @Override
     public Payment get(Integer id) {
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM PAYMENT WHERE id_payments = ?")) {
             stmt.setInt(1, id);
 
@@ -102,7 +81,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
     public Set<Payment> getAll() {
         Set<Payment> payments = new HashSet<>();
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM PAYMENT");
                 ResultSet rs = stmt.executeQuery()) {
 
@@ -121,7 +100,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
         Set<Payment> payments = new HashSet<>();
         String sql = "SELECT * FROM PAYMENT WHERE amount BETWEEN ? AND ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setDouble(1, minAmount);
@@ -144,7 +123,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
         Set<Payment> payments = new HashSet<>();
         String sql = "SELECT * FROM PAYMENT WHERE payment_method = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, method);

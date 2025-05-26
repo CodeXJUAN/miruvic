@@ -4,6 +4,8 @@ import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Room;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
+
 import java.time.LocalDate;
 import java.util.Set;
 

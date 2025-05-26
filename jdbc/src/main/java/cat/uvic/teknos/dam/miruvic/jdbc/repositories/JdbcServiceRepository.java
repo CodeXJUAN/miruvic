@@ -2,7 +2,6 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.ServiceRepository;
@@ -17,26 +16,6 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws DataSourceException {
-        var properties = new Properties();
-        try {
-            properties.load(new FileInputStream("datasource.properties"));
-        } catch (IOException e) {
-            throw new DataSourceException("Error al cargar el archivo de propiedades", e);
-        }
-        String driver = properties.getProperty("driver");
-        String server = properties.getProperty("server");
-        String database = properties.getProperty("database");
-        String username = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        try {
-            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                    username, password);
-        } catch (SQLException e) {
-            throw new DataSourceException("Error al conectar con la base de datos", e);
-        }
-    }
-
     @Override
     public void save(Service service) {
         String sql;
@@ -46,7 +25,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
             sql = "UPDATE SERVICE SET name = ?, description = ?, price = ? WHERE id = ?";
         }
         
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, service.getServiceName());
             stmt.setString(2, service.getDescription());
@@ -74,7 +53,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
     public void delete(Service service) {
         String sql = "DELETE FROM SERVICE WHERE id = ?";
         
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, service.getId());
             stmt.executeUpdate();
@@ -87,7 +66,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
     public Service get(Integer id) {
         String sql = "SELECT * FROM SERVICE WHERE id = ?";
         
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             
@@ -107,7 +86,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
     @Override
     public Service findByName(String name) {
         String sql = "SELECT * FROM SERVICE WHERE name = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -126,7 +105,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
         Set<Service> services = new HashSet<>();
         String sql = "SELECT * FROM SERVICE";
         
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -141,7 +120,7 @@ public class JdbcServiceRepository implements ServiceRepository<Service> {
     @Override
     public Service findByType(String type) {
         String sql = "SELECT * FROM SERVICE WHERE type = ?";
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, type);
             try (ResultSet rs = stmt.executeQuery()) {

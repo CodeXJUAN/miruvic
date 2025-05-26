@@ -2,7 +2,6 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import cat.uvic.teknos.dam.miruvic.model.Room;
 import cat.uvic.teknos.dam.miruvic.model.Room.RoomType;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
@@ -18,26 +17,6 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         this.dataSource = dataSource;
     }
 
-    private Connection getConnection() throws DataSourceException {
-        var properties = new Properties();
-        try {
-            properties.load(new FileInputStream("datasource.properties"));
-        } catch (IOException e) {
-            throw new DataSourceException("Error al cargar el archivo de propiedades", e);
-        }
-        String driver = properties.getProperty("driver");
-        String server = properties.getProperty("server");
-        String database = properties.getProperty("database");
-        String username = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        try {
-            return DriverManager.getConnection(String.format("jdbc:%s://%s/%s", driver, server, database),
-                    username, password);
-        } catch (SQLException e) {
-            throw new DataSourceException("Error al conectar con la base de datos", e);
-        }
-    }
-
     @Override
     public void save(Room value) {
         String sql;
@@ -47,7 +26,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
             sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
         }
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, value.getRoomNumber());
             stmt.setInt(2, value.getFloor());
@@ -77,7 +56,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     public void delete(Room value) {
         String sql = "DELETE FROM ROOM WHERE id_room = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, value.getId());
             stmt.executeUpdate();
@@ -90,7 +69,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     public Room get(Integer id) {
         String sql = "SELECT * FROM ROOM WHERE id_room = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
 
@@ -110,7 +89,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         Set<Room> rooms = new HashSet<>();
         String sql = "SELECT * FROM ROOM";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
                 ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -126,7 +105,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     public Room findByNumber(String number) {
         String sql = "SELECT * FROM ROOM WHERE room_number = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, number);
 
@@ -145,7 +124,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     public Room findByType(String type) {
         String sql = "SELECT * FROM ROOM WHERE room_type = ?";
 
-        try (Connection conn = getConnection();
+        try (Connection conn = dataSource.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, type);
 

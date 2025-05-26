@@ -14,7 +14,6 @@ class JdbcAddressRepositoryIT {
     
     @BeforeAll
     static void setup() {
-        dataSource = new SingleConnectionDataSource();
         repository = new JdbcAddressRepository(dataSource);
         
         // Initialize test database

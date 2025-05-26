@@ -20,7 +20,6 @@ class JdbcStudentRepositoryIT {
 
     @BeforeAll
     static void setup() {
-        dataSource = new SingleConnectionDataSource(); // Assuming SingleConnectionDataSource is in the correct package
         studentRepository = new JdbcStudentRepository(dataSource);
         addressRepository = new JdbcAddressRepository(dataSource);
 
@@ -101,7 +100,7 @@ class JdbcStudentRepositoryIT {
         assertNotNull(saved);
         assertEquals("John", saved.getFirstName());
         assertNotNull(saved.getAddress());
-        assertEquals(address.getId(), saved.getAddress().getId());
+        assertEquals(address.getId(), saved.getAddress());
     }
 
     @Test

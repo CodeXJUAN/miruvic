@@ -4,31 +4,20 @@ import java.math.BigDecimal;
 
 public interface Room {
 
-    public int getId();
-
-    public void setId(int id);
-
+    public Integer getId();
     public String getRoomNumber();
-
-    public void setRoomNumber(String roomNumber);
-
-    public int getFloor();
-
-    public void setFloor(int floor);
-
-    public int getCapacity();
-
-    public void setCapacity(int capacity);
-
-    public RoomType getType();
-
-    public void setType(RoomType type);
-
+    public Integer getFloor();
+    public Integer getCapacity();
+    public String getType();
     public BigDecimal getPrice();
 
+
+
+    public void setId(Integer id);
+    public void setRoomNumber(String roomNumber);
+    public void setFloor(Integer floor);
+    public void setCapacity(Integer capacity);
+    public void setType(String type);
     public void setPrice(BigDecimal price);
 
-    public enum RoomType {
-        Individual, Double, Suite
-    }
 }

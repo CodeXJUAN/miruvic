@@ -4,18 +4,18 @@ import java.math.BigDecimal;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 
 public class JdbcService implements Service {
-    private int id;
+    private Integer id;
     private String serviceName;
     private String description;
     private BigDecimal price;
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

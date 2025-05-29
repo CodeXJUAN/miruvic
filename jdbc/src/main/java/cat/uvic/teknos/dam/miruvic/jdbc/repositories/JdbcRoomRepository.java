@@ -2,14 +2,14 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import java.sql.*;
 import java.util.*;
+
 import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Room.RoomType;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.RoomRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 
-public class JdbcRoomRepository implements RoomRepository<Room> {
+public class JdbcRoomRepository implements RoomRepository {
 
     private final DataSource dataSource;
 
@@ -18,32 +18,32 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     }
 
     @Override
-    public void save(Room value) {
+    public void save(Room room) {
         String sql;
-        if (value.getId() == 0) {
+        if (room.getId() == null || room.getId() == 0) {
             sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price) VALUES (?, ?, ?, ?, ?)";
         } else {
             sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
         }
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, value.getRoomNumber());
-            stmt.setInt(2, value.getFloor());
-            stmt.setInt(3, value.getCapacity());
-            stmt.setString(4, value.getType().toString());
-            stmt.setBigDecimal(5, value.getPrice());
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, room.getRoomNumber());
+            stmt.setInt(2, room.getFloor());
+            stmt.setInt(3, room.getCapacity());
+            stmt.setString(4, room.getType());
+            stmt.setBigDecimal(5, room.getPrice());
 
-            if (value.getId() != 0) {
-                stmt.setInt(6, value.getId());
+            if (room.getId() != null && room.getId() != 0) {
+                stmt.setInt(6, room.getId());
             }
 
             stmt.executeUpdate();
 
-            if (value.getId() == 0) {
+            if (room.getId() == null || room.getId() == 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        value.setId(generatedKeys.getInt(1));
+                        room.setId(generatedKeys.getInt(1));
                     }
                 }
             }
@@ -53,13 +53,26 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
     }
 
     @Override
-    public void delete(Room value) {
-        String sql = "DELETE FROM ROOM WHERE id_room = ?";
-
+    public void delete(Room room) {
+        // Primero verificamos si la habitación está asociada a alguna reserva
+        String checkSql = "SELECT COUNT(*) FROM RESERVATION WHERE room_id = ?";
+        
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, value.getId());
-            stmt.executeUpdate();
+             PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+            checkStmt.setInt(1, room.getId());
+            
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new RepositoryException("No se puede eliminar la habitación porque está asociada a reservas");
+                }
+            }
+            
+            // Si no hay reservas asociadas, eliminamos la habitación
+            String deleteSql = "DELETE FROM ROOM WHERE id_room = ?";
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
+                deleteStmt.setInt(1, room.getId());
+                deleteStmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RepositoryException("Error al eliminar la habitación", e);
         }
@@ -70,7 +83,7 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         String sql = "SELECT * FROM ROOM WHERE id_room = ?";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
 
             try (ResultSet rs = stmt.executeQuery()) {
@@ -90,8 +103,8 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         String sql = "SELECT * FROM ROOM";
 
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 rooms.add(mapResultSetToRoom(rs));
             }
@@ -100,15 +113,15 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         }
         return rooms;
     }
-    
+
     @Override
     public Room findByNumber(String number) {
         String sql = "SELECT * FROM ROOM WHERE room_number = ?";
-
+        
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, number);
-
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToRoom(rs);
@@ -117,17 +130,17 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         } catch (SQLException e) {
             throw new RepositoryException("Error al buscar habitación por número", e);
         }
-        throw new EntityNotFoundException("Habitación no encontrada con número: " + number);
+        throw new EntityNotFoundException("Habitación con número '" + number + "' no encontrada");
     }
 
     @Override
     public Room findByType(String type) {
         String sql = "SELECT * FROM ROOM WHERE room_type = ?";
-
+        
         try (Connection conn = dataSource.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, type);
-
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToRoom(rs);
@@ -136,21 +149,17 @@ public class JdbcRoomRepository implements RoomRepository<Room> {
         } catch (SQLException e) {
             throw new RepositoryException("Error al buscar habitación por tipo", e);
         }
-        throw new EntityNotFoundException("Habitación no encontrada con tipo: " + type);
+        throw new EntityNotFoundException("Habitación con tipo '" + type + "' no encontrada");
     }
     
-    private Room mapResultSetToRoom(ResultSet rs) {
-        try {
-            Room room = new RoomImpl();
-            room.setId(rs.getInt("id_room"));
-            room.setRoomNumber(rs.getString("room_number"));
-            room.setFloor(rs.getInt("floor"));
-            room.setCapacity(rs.getInt("capacity"));
-            room.setType(RoomType.valueOf(rs.getString("room_type")));
-            room.setPrice(rs.getBigDecimal("price"));
-            return room;
-        } catch (SQLException e) {
-            throw new RepositoryException("Error al mapear los datos de la habitación", e);
-        }
+    private Room mapResultSetToRoom(ResultSet rs) throws SQLException {
+        Room room = new RoomImpl();
+        room.setId(rs.getInt("id_room"));
+        room.setRoomNumber(rs.getString("room_number"));
+        room.setFloor(rs.getInt("floor"));
+        room.setCapacity(rs.getInt("capacity"));
+        room.setType(rs.getString("room_type"));
+        room.setPrice(rs.getBigDecimal("price"));
+        return room;
     }
 }

@@ -3,19 +3,13 @@ package cat.uvic.teknos.dam.miruvic.model;
 import java.math.BigDecimal;
 
 public interface Service {
-    public int getId();
+    Integer getId();
+    String getServiceName();
+    String getDescription();
+    BigDecimal getPrice();
 
-    public void setId(int id);
-
-    public String getServiceName();
-
-    public void setServiceName(String serviceName);
-
-    public String getDescription();
-
-    public void setDescription(String description);
-
-    public BigDecimal getPrice();
-
-    public void setPrice(BigDecimal price);
+    void setId(Integer id);
+    void setServiceName(String serviceName);
+    void setDescription(String description);
+    void setPrice(BigDecimal price);
 }

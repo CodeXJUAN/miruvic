@@ -6,20 +6,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class PaymentImpl implements Payment {
-    private int id;
+    private Integer id;
     private Reservation reservation;
     private BigDecimal amount;
     private LocalDate paymentDate;
-    private PaymentMethod paymentMethod;
-    private PaymentStatus status;
+    private String paymentMethod;
+    private String status;
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -54,22 +54,22 @@ public class PaymentImpl implements Payment {
     }
 
     @Override
-    public PaymentMethod getPaymentMethod() {
+    public String getPaymentMethod() {
         return paymentMethod;
     }
 
     @Override
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
+    public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
 
     @Override
-    public PaymentStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
     @Override
-    public void setStatus(PaymentStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

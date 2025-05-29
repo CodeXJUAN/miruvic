@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "miruvic"
-include("app","model","utilities","repositories","jdbc")
+include("app","model","repositories","jdbc")

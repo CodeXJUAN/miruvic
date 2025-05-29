@@ -3,11 +3,9 @@ package cat.uvic.teknos.dam.miruvic.model;
 import java.util.Set;
 
 public interface ReservationService {
-    public Set<Reservation> getReservation();
+    Set<Reservation> getReservation();
+    Set<Service> getService();
 
-    public void setReservation(Reservation reservation);
-
-    public Set<Service> getService();
-
-    public void setService(Service service);
+    void setReservation(Set<Reservation> reservation);
+    void setService(Set<Service> services);
 }

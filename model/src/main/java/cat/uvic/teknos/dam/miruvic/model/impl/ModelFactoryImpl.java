@@ -9,8 +9,9 @@ import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 
 public class ModelFactoryImpl implements ModelFactory {
+
     @Override
-    public Address newAddres(){
+    public Address newAddress(){
         return new AddressImpl();
     }
 

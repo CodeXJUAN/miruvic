@@ -7,25 +7,25 @@ import cat.uvic.teknos.dam.miruvic.model.ReservationService;
 
 public class JdbcReservationService implements ReservationService {
     private Set<Reservation> reservation;
-    private Set<Service> service;
+    private Set<Service> services;
 
     @Override
     public Set<Reservation> getReservation() {
-        return reservation != null ? reservation : Set.of();
+        return Set.of();
     }
 
     @Override
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation != null ? Set.of(reservation) : Set.of();
+    public void setReservation(Set<Reservation> reservation) {
+        this.reservation = reservation;
     }
 
     @Override
     public Set<Service> getService() {
-        return service != null ? service : Set.of();
+        return Set.of();
     }
 
     @Override
-    public void setService(Service service) {
-        this.service = service != null ? Set.of(service) : Set.of();
+    public void setService(Set<Service> services) {
+        this.services = services;
     }
 }

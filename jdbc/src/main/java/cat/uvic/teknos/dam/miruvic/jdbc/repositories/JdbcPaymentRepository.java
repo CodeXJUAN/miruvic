@@ -8,7 +8,7 @@ import cat.uvic.teknos.dam.miruvic.model.impl.PaymentImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 
-public class JdbcPaymentRepository implements PaymentRepository<Payment> {
+public class JdbcPaymentRepository implements PaymentRepository {
     
     private final DataSource dataSource;
 
@@ -96,7 +96,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
     }
 
     @Override
-    public Payment findByAmountRange(double minAmount, double maxAmount) {
+    public Set<Payment> findByAmountRange(double minAmount, double maxAmount) {
         Set<Payment> payments = new HashSet<>();
         String sql = "SELECT * FROM PAYMENT WHERE amount BETWEEN ? AND ?";
 
@@ -115,11 +115,11 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
             throw new RepositoryException("Error finding payments by amount range", e);
         }
 
-        return (Payment) payments;
+        return payments;
     }
 
     @Override
-    public Payment findByMethod(String method) {
+    public Set<Payment> findByMethod(String method) {
         Set<Payment> payments = new HashSet<>();
         String sql = "SELECT * FROM PAYMENT WHERE payment_method = ?";
 
@@ -137,7 +137,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
             throw new RepositoryException("Error finding payments by method", e);
         }
 
-        return (Payment) payments;
+        return payments;
     }
 
     private Payment mapResultSetToPayment(ResultSet rs) {
@@ -146,7 +146,7 @@ public class JdbcPaymentRepository implements PaymentRepository<Payment> {
             payments.setId(rs.getInt("id_payments"));
             payments.setAmount(rs.getBigDecimal("amount"));
             payments.setPaymentDate(rs.getDate("payment_date").toLocalDate());
-            payments.setPaymentMethod(Payment.PaymentMethod.valueOf(rs.getString("payment_method")));
+            payments.setPaymentMethod(rs.getString("payment_method"));
             return payments;
         } catch (SQLException e) {
             throw new RepositoryException("Error al mapear los datos de la habitación", e);

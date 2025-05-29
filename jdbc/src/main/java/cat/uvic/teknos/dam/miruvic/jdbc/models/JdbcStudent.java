@@ -5,7 +5,7 @@ import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 
 public class JdbcStudent implements Student {
-    private int id;
+    private Integer id;
     private String firstName;
     private String lastName;
     private String email;
@@ -14,12 +14,12 @@ public class JdbcStudent implements Student {
     private Set<Address> address_id;
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -75,11 +75,11 @@ public class JdbcStudent implements Student {
 
     @Override
     public Set<Address> getAddress() {
-        return address_id != null ? address_id : Set.of();
+        return Set.of();
     }
 
     @Override
-    public void setAddress(Address address) {
-        this.address_id = address != null ? Set.of(address) : Set.of();
+    public void setAddress(Set<Address> address_id) {
+        this.address_id = address_id;
     }
 }

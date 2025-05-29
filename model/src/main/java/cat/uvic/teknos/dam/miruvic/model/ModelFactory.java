@@ -1,35 +1,16 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
-import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.PaymentImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
+public interface ModelFactory {
 
-public class ModelFactory {
+    Address newAddress();
 
-    public static Address createAddress() {
-        return new AddressImpl();
-    }
+    Student newStudent();
 
-    public static Payment createPayment() {
-        return new PaymentImpl();
-    }
+    Payment newPayment();
 
-    public static Reservation createReservation() {
-        return new ReservationImpl();
-    }
+    Reservation newReservation();
 
-    public static Room createRoom() {
-        return new RoomImpl();
-    }
+    Room newRoom();
 
-    public static Service createService() {
-        return new ServiceImpl();
-    }
-
-    public static Student createStudent() {
-        return new StudentImpl();
-    }
+    Service newService();
 }

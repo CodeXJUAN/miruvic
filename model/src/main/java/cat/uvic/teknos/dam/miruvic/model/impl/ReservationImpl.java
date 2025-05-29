@@ -4,47 +4,49 @@ import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Room;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
-import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
+
 import java.time.LocalDate;
 import java.util.Set;
 
 public class ReservationImpl implements Reservation {
-    private int id;
-    private Set<Student> students;
-    private Set<Room> rooms;     
+    private Integer id;
+    private Set<Student> student;
+    private Set<Room> room;
     private LocalDate startDate;
     private LocalDate endDate;
-    private ReservationStatus status;
+    private String status;
     private Set<Service> services;
 
+
+
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
     @Override
     public Set<Student> getStudent() {
-        return students != null ? students : Set.of();
+        return Set.of();
     }
 
     @Override
-    public void setStudent(Student student) {
-        this.students = student != null ? Set.of(student) : Set.of();
+    public void setStudent(Set<Student> student) {
+        this.student = student;
     }
 
     @Override
     public Set<Room> getRoom() {
-        return rooms != null ? rooms : Set.of();
+        return Set.of();
     }
 
     @Override
-    public void setRoom(Room room) {
-        this.rooms = room != null ? Set.of(room) : Set.of();
+    public void setRoom(Set<Room> room) {
+        this.room = room;
     }
 
     @Override
@@ -68,18 +70,18 @@ public class ReservationImpl implements Reservation {
     }
 
     @Override
-    public ReservationStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
     @Override
-    public void setStatus(ReservationStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
     @Override
     public Set<Service> getServices() {
-        return services;
+        return Set.of();
     }
 
     @Override

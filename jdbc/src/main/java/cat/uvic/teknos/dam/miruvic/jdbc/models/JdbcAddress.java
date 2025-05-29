@@ -3,7 +3,7 @@ package cat.uvic.teknos.dam.miruvic.jdbc.models;
 import cat.uvic.teknos.dam.miruvic.model.Address;
 
 public class JdbcAddress implements Address {
-    private int id;
+    private Integer id;
     private String street;
     private String city;
     private String state;
@@ -11,12 +11,12 @@ public class JdbcAddress implements Address {
     private String country;
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

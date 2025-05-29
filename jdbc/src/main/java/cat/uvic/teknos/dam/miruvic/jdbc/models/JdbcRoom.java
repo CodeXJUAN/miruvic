@@ -4,20 +4,20 @@ import java.math.BigDecimal;
 import cat.uvic.teknos.dam.miruvic.model.Room;
 
 public class JdbcRoom implements Room {
-    private int id;
+    private Integer id;
     private String roomNumber;
-    private int floor;
-    private int capacity;
-    private RoomType type;
+    private Integer floor;
+    private Integer capacity;
+    private String type;
     private BigDecimal price;
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -32,32 +32,32 @@ public class JdbcRoom implements Room {
     }
 
     @Override
-    public int getFloor() {
+    public Integer getFloor() {
         return floor;
     }
 
     @Override
-    public void setFloor(int floor) {
+    public void setFloor(Integer floor) {
         this.floor = floor;
     }
 
     @Override
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
     @Override
-    public void setCapacity(int capacity) {
+    public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
 
     @Override
-    public RoomType getType() {
+    public String getType() {
         return type;
     }
 
     @Override
-    public void setType(RoomType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

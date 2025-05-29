@@ -1,35 +1,22 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
-import cat.uvic.teknos.dam.miruvic.model.ReservationStatus;
 import java.time.LocalDate;
 import java.util.Set;
 
 public interface Reservation {
-    public int getId();
+    Integer getId();
+    Set<Student> getStudent();
+    Set<Room> getRoom();
+    LocalDate getStartDate();
+    LocalDate getEndDate();
+    String getStatus();
+    Set<Service> getServices();
 
-    public void setId(int id);
-
-    public Set<Student> getStudent();
-
-    public void setStudent(Student student);
-
-    public Set<Room> getRoom();
-
-    public void setRoom(Room room);
-
-    public LocalDate getStartDate();
-
-    public void setStartDate(LocalDate startDate);
-
-    public LocalDate getEndDate();
-
-    public void setEndDate(LocalDate endDate);
-
-    public ReservationStatus getStatus();
-    
-    public void setStatus(ReservationStatus status);
-
-    public Set<Service> getServices();
-
-    public void setServices(Set<Service> services);
+    void setId(Integer id);
+    void setStudent(Set<Student> student);
+    void setRoom(Set<Room> room);
+    void setStartDate(LocalDate startDate);
+    void setEndDate(LocalDate endDate);
+    void setStatus(String status);
+    void setServices(Set<Service> services);
 }

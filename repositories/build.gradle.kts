@@ -7,5 +7,5 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":model"))
+    api(project(":model"))
 }

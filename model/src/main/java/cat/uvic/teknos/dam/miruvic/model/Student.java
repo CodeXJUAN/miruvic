@@ -3,31 +3,20 @@ package cat.uvic.teknos.dam.miruvic.model;
 import java.util.Set;
 
 public interface Student {
-    public int getId();
+    Integer getId();
+    String getFirstName();
+    String getLastName();
+    String getEmail();
+    String getPasswordHash();
+    String getPhoneNumber();
+    Set<Address> getAddress();
 
-    public void setId(int id);
+    void setId(Integer id);
+    void setFirstName(String firstName);
+    void setLastName(String lastName);
+    void setEmail(String email);
+    void setPasswordHash(String passwordHash);
+    void setPhoneNumber(String phoneNumber);
+    void setAddress(Set<Address> address_id);
 
-    public String getFirstName();
-
-    public void setFirstName(String firstName);
-
-    public String getLastName();
-
-    public void setLastName(String lastName);
-
-    public String getEmail();
-
-    public void setEmail(String email);
-
-    public String getPasswordHash();
-
-    public void setPasswordHash(String passwordHash);
-
-    public String getPhoneNumber();
-
-    public void setPhoneNumber(String phoneNumber);
-
-    public Set<Address> getAddress();
-
-    public void setAddress(Address address);
 }

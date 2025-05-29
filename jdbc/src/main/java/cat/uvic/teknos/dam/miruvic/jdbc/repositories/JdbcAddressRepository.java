@@ -8,7 +8,7 @@ import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 
-public class JdbcAddressRepository implements AddressRepository<Address> {
+public class JdbcAddressRepository implements AddressRepository {
 
     private final DataSource dataSource;
 

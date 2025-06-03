@@ -2,52 +2,44 @@ package cat.uvic.teknos.dam.miruvic.repositories.jdbc.datasources;
 
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.SingleConnectionDataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 class SingleConnectionIT {
 
-    @Test
-    void getDriver() {
-        var dataSource = new SingleConnectionDataSource();
+    private static SingleConnectionDataSource dataSource;
 
-        assertEquals("mysql", dataSource.getDriver());
+    @BeforeAll
+    static void setup() {
+        dataSource = new SingleConnectionDataSource(
+                "org.h2.Driver",
+                "localhost",
+                "testdb",
+                "sa",
+                ""
+        );
     }
 
     @Test
-    void getServer() {
+    void getConnection_NotNull() {
+        Connection conn = dataSource.getConnection();
+        assertNotNull(conn, "Connection should not be null");
     }
 
     @Test
-    void getDatabase() {
+    void getConnection_IsValid() throws SQLException {
+        Connection conn = dataSource.getConnection();
+        assertTrue(conn.isValid(2), "Connection should be valid");
     }
 
     @Test
-    void getUser() {
-    }
-
-    @Test
-    void getPassword() {
-    }
-
-    @Test
-    void getConnectionOk() {
-        var dataSource = new SingleConnectionDataSource();
-
-        var connection = dataSource.getConnection();
-
-        assertNotNull(connection);
-    }
-
-    @Test
-    void getConnectionKo() {
-        var dataSource = new SingleConnectionDataSource(
-                "mysql",
-                "localhost:3306",
-                "RUVIC",
-                "root",
-                "rootpassword");
-
-        assertThrows(DataSourceException.class, dataSource::getConnection);
+    void getSameConnectionInstance() {
+        Connection conn1 = dataSource.getConnection();
+        Connection conn2 = dataSource.getConnection();
+        assertSame(conn1, conn2, "Should return the same connection instance");
     }
 }

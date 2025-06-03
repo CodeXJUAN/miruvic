@@ -5,6 +5,8 @@ import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcAddressRepository;
 import org.junit.jupiter.api.*;
+
+import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -106,10 +108,10 @@ class JdbcAddressRepositoryIT {
         repository.save(createTestAddress("Main St", "Barcelona"));
         repository.save(createTestAddress("Second St", "Madrid"));
         
-        Address found = repository.findByCity("Barcelona");
+        List<Address> found = repository.findByCity("Barcelona");
         
         assertNotNull(found);
-        assertEquals("Barcelona", found.getCity());
+        assertEquals("Barcelona", found.get());
     }
     
     @Test
@@ -117,10 +119,10 @@ class JdbcAddressRepositoryIT {
         repository.save(createTestAddress("Main St", "Barcelona", "08001"));
         repository.save(createTestAddress("Second St", "Barcelona", "08002"));
         
-        Address found = repository.findByPostalCode("08001");
+        List<Address> found = repository.findByPostalCode("08001");
         
         assertNotNull(found);
-        assertEquals("08001", found.getZipCode());
+        assertEquals("08001", found.getFirst());
     }
     
     @Test
@@ -128,7 +130,7 @@ class JdbcAddressRepositoryIT {
         repository.save(createTestAddress("Main St", "Barcelona", "Spain"));
         repository.save(createTestAddress("Second St", "Paris", "France"));
         
-        Address found = repository.findByCountry("Spain");
+        List<Address> found = repository.findByCountry("Spain");
         
         assertNotNull(found);
         assertEquals("Spain", found.getCountry());

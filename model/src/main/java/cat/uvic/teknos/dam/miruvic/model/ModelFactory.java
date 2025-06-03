@@ -12,5 +12,7 @@ public interface ModelFactory {
 
     Room newRoom();
 
+    ReservationService newReservationService();
+
     Service newService();
 }

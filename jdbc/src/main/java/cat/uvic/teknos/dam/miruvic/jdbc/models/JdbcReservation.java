@@ -15,9 +15,6 @@ public class JdbcReservation implements Reservation {
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
-    private Set<Service> services;
-
-
 
     @Override
     public Integer getId() {
@@ -77,15 +74,5 @@ public class JdbcReservation implements Reservation {
     @Override
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    @Override
-    public Set<Service> getServices() {
-        return Set.of();
-    }
-
-    @Override
-    public void setServices(Set<Service> services) {
-        this.services = services;
     }
 }

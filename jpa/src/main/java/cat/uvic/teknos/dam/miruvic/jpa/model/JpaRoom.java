@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.model.jpa;
+package cat.uvic.teknos.dam.miruvic.jpa.model;
 
 import cat.uvic.teknos.dam.miruvic.model.Room;
 import jakarta.persistence.*;
@@ -20,18 +20,22 @@ public class JpaRoom implements Room {
     @Column(name = "id")
     private Integer id;
     
-    @Column(name = "room_number")
+    @Column(name = "room_number", nullable = false, unique = true)
     private String roomNumber;
     
-    @Column(name = "floor")
+    @Column(name = "floor", nullable = false)
     private Integer floor;
     
-    @Column(name = "capacity")
+    @Column(name = "capacity", nullable = false)
     private Integer capacity;
     
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     private String type;
     
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "reservation_id", nullable = false)
+    private JpaReservation reservation;
 }

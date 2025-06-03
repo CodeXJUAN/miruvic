@@ -2,10 +2,12 @@ package cat.uvic.teknos.dam.miruvic.repositories;
 
 import cat.uvic.teknos.dam.miruvic.model.Student;
 
-public interface StudentRepository extends Repository<Integer, Student> {
-    Student findByName(String name);
+import java.util.List;
 
-    Student findByEmail(String email);
+public interface StudentRepository extends Repository<Integer, Student> {
+    List<Student> findByName(String name);
+
+    List<Student> findByEmail(String email);
     
-    Student findByPhone(String phone_number);
+    List<Student> findByPhone(String phone_number);
 }

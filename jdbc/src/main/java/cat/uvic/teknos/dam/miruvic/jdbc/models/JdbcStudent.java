@@ -1,8 +1,9 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
-import java.util.Set;
 import cat.uvic.teknos.dam.miruvic.model.Address;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
+import java.util.Set;
 
 public class JdbcStudent implements Student {
     private Integer id;
@@ -12,6 +13,7 @@ public class JdbcStudent implements Student {
     private String passwordHash;
     private String phoneNumber;
     private Set<Address> address_id;
+    private Set<Reservation> reservations;
 
     @Override
     public Integer getId() {
@@ -74,12 +76,19 @@ public class JdbcStudent implements Student {
     }
 
     @Override
-    public Set<Address> getAddress() {
+    public Set<Address> getAddress() { return Set.of(); }
+
+
+    @Override
+    public void setAddress(Set<Address> address) { this.address_id = address; }
+
+    @Override
+    public Set<Reservation> getReservations() {
         return Set.of();
     }
 
     @Override
-    public void setAddress(Set<Address> address_id) {
-        this.address_id = address_id;
+    public void setReservations(Set<Reservation> reservations) {
+        this.reservations = reservations;
     }
 }

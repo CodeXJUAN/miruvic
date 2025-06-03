@@ -1,6 +1,9 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.models;
 
 import java.math.BigDecimal;
+import java.util.Set;
+
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Room;
 
 public class JdbcRoom implements Room {
@@ -10,6 +13,7 @@ public class JdbcRoom implements Room {
     private Integer capacity;
     private String type;
     private BigDecimal price;
+    private Set<Reservation> reservations;
 
     @Override
     public Integer getId() {
@@ -69,5 +73,15 @@ public class JdbcRoom implements Room {
     @Override
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    @Override
+    public Set<Reservation> getReservations() {
+        return Set.of();
+    }
+
+    @Override
+    public void setReservations(Set<Reservation> reservations) {
+        this.reservations = reservations;
     }
 }

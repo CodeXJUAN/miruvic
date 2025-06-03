@@ -9,14 +9,11 @@ plugins {
 dependencies {
     implementation(project(":model"))
     implementation(project(":repositories"))
+
+    implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
+    implementation("org.hibernate.orm:hibernate-core:7.0.0.Final")
     implementation("com.mysql:mysql-connector-j:9.3.0")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
-
-    testImplementation("com.h2database:h2:2.2.220")
-}
-
-tasks.test {
-    useJUnitPlatform()
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
 }

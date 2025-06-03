@@ -1,5 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.repositories;
 
+
 public interface RepositoryFactory {
 
     AddressRepository getAddressRepository();
@@ -9,6 +10,8 @@ public interface RepositoryFactory {
     PaymentRepository getPaymentRepository();
 
     ReservationRepository getReservationRepository();
+
+    ReservationServiceRepository getReservationServiceRepository();
 
     RoomRepository getRoomRepository();
 

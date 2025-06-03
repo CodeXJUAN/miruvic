@@ -2,10 +2,12 @@ package cat.uvic.teknos.dam.miruvic.repositories;
 
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
 
-public interface ReservationRepository extends Repository<Integer, Reservation> {
-    Reservation findByDate(java.time.LocalDate date);
+import java.util.List;
 
-    Reservation findByStudentId(int studentId);
+public interface ReservationRepository extends Repository<Integer, Reservation> {
+    List<Reservation> findByDate(java.time.LocalDate date);
+
+    List<Reservation> findByStudentId(Integer studentId);
 }
 
     

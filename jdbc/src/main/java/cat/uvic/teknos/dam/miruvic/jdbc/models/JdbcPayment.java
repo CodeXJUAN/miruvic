@@ -4,6 +4,7 @@ import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Payment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 public class JdbcPayment implements Payment {
     private Integer id;
@@ -12,6 +13,7 @@ public class JdbcPayment implements Payment {
     private LocalDate paymentDate;
     private String paymentMethod;
     private String status;
+    private Set<Reservation> reservations;
 
     @Override
     public Integer getId() {
@@ -24,13 +26,13 @@ public class JdbcPayment implements Payment {
     }
 
     @Override
-    public Reservation getReservation() {
-        return reservation;
+    public Set<Reservation> getReservation() {
+        return Set.of();
     }
 
     @Override
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
+    public void setReservation(Set<Reservation> reservation) {
+        this.reservations = reservation;
     }
 
     @Override

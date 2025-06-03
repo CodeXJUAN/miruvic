@@ -1,12 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
-import cat.uvic.teknos.dam.miruvic.model.Address;
-import cat.uvic.teknos.dam.miruvic.model.ModelFactory;
-import cat.uvic.teknos.dam.miruvic.model.Payment;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
-import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Service;
-import cat.uvic.teknos.dam.miruvic.model.Student;
+import cat.uvic.teknos.dam.miruvic.model.*;
 
 public class ModelFactoryImpl implements ModelFactory {
 
@@ -28,6 +22,11 @@ public class ModelFactoryImpl implements ModelFactory {
     @Override
     public Reservation newReservation(){
         return new ReservationImpl();
+    }
+
+    @Override
+    public ReservationService newReservationService(){
+        return new ReservationServiceImpl();
     }
 
     @Override

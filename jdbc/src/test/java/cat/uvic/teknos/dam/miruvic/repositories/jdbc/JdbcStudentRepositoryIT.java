@@ -7,31 +7,32 @@ import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcAddressRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcStudentRepository;
+import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class JdbcStudentRepositoryIT {
     private static DataSource dataSource;
     private static JdbcStudentRepository studentRepository;
-    private static JdbcAddressRepository addressRepository; // For managing addresses
+    private static JdbcAddressRepository addressRepository;
 
     @BeforeAll
     static void setup() {
         studentRepository = new JdbcStudentRepository(dataSource);
         addressRepository = new JdbcAddressRepository(dataSource);
 
-        // Initialize test database
         try (var conn = dataSource.getConnection();
              var stmt = conn.createStatement()) {
-            // Drop tables in reverse order of creation due to FK constraints
             stmt.execute("DROP TABLE IF EXISTS STUDENT");
             stmt.execute("DROP TABLE IF EXISTS ADDRESS");
 
             stmt.execute("CREATE TABLE IF NOT EXISTS ADDRESS (" +
-                    "id_addresses INT PRIMARY KEY AUTO_INCREMENT, " +
+                    "id INT PRIMARY KEY AUTO_INCREMENT, " +
                     "street VARCHAR(100), " +
                     "city VARCHAR(50), " +
                     "state VARCHAR(50), " +
@@ -46,7 +47,7 @@ class JdbcStudentRepositoryIT {
                     "password_hash VARCHAR(255), " +
                     "phone_number VARCHAR(20), " +
                     "address_id INT, " +
-                    "FOREIGN KEY (address_id) REFERENCES ADDRESS(id_addresses))");
+                    "FOREIGN KEY (address_id) REFERENCES ADDRESS(id))");
 
         } catch (Exception e) {
             throw new RuntimeException("Test DB setup failed", e);
@@ -58,7 +59,7 @@ class JdbcStudentRepositoryIT {
         try (var conn = dataSource.getConnection();
              var stmt = conn.createStatement()) {
             stmt.execute("DELETE FROM STUDENT");
-            stmt.execute("DELETE FROM ADDRESS"); // Also clean addresses if they were created for students
+            stmt.execute("DELETE FROM ADDRESS");
         } catch (Exception e) {
             throw new RuntimeException("Test cleanup failed", e);
         }
@@ -83,7 +84,7 @@ class JdbcStudentRepositoryIT {
         student.setPasswordHash("testPassword");
         student.setPhoneNumber("123456789");
         if (address != null) {
-            student.setAddress(address);
+            student.setAddress(Set.of(address));
         }
         return student;
     }
@@ -100,7 +101,8 @@ class JdbcStudentRepositoryIT {
         assertNotNull(saved);
         assertEquals("John", saved.getFirstName());
         assertNotNull(saved.getAddress());
-        assertEquals(address.getId(), saved.getAddress());
+        assertFalse(saved.getAddress().isEmpty());
+        assertEquals(address.getId(), saved.getAddress().iterator().next().getId());
     }
 
     @Test
@@ -126,9 +128,7 @@ class JdbcStudentRepositoryIT {
 
         studentRepository.delete(student);
 
-        assertThrows(cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException.class, () -> {
-            studentRepository.get(student.getId());
-        });
+        assertThrows(EntityNotFoundException.class, () -> studentRepository.get(student.getId()));
     }
 
     @Test
@@ -161,12 +161,14 @@ class JdbcStudentRepositoryIT {
         studentRepository.save(createTestStudent("UniqueName", "uniquename@example.com", address));
         studentRepository.save(createTestStudent("AnotherName", "anothername@example.com", null));
 
-        Student found = studentRepository.findByName("UniqueName");
+        List<Student> found = studentRepository.findByName("UniqueName");
         assertNotNull(found);
-        assertEquals("UniqueName", found.getFirstName());
+        assertFalse(found.isEmpty());
+        assertTrue(found.stream().anyMatch(s -> "UniqueName".equals(s.getFirstName())));
 
-        Student foundPartial = studentRepository.findByName("Name"); // Should find either or based on LIKE %Name%
+        List<Student> foundPartial = studentRepository.findByName("Name");
         assertNotNull(foundPartial);
+        assertFalse(foundPartial.isEmpty());
     }
 
     @Test
@@ -174,19 +176,20 @@ class JdbcStudentRepositoryIT {
         Address address = createAndSaveTestAddress("8 Willow Way", "FindEmailCity");
         studentRepository.save(createTestStudent("EmailUser", "user.email.specific@example.com", address));
 
-        Student found = studentRepository.findByEmail("user.email.specific@example.com");
+        List<Student> found = studentRepository.findByEmail("user.email.specific@example.com");
         assertNotNull(found);
-        assertEquals("user.email.specific@example.com", found.getEmail());
+        assertFalse(found.isEmpty());
+        assertTrue(found.stream().anyMatch(s -> "user.email.specific@example.com".equals(s.getEmail())));
     }
 
     @Test
     void shouldFindStudentByPhone() {
         Address address = createAndSaveTestAddress("9 Spruce Pl", "FindPhoneCity");
         studentRepository.save(createTestStudent("PhoneUser", "phone.user@example.com", address));
-        // Assuming createTestStudent sets a default phone number "123456789"
 
-        Student found = studentRepository.findByPhone("123456789");
+        List<Student> found = studentRepository.findByPhone("123456789");
         assertNotNull(found);
-        assertEquals("123456789", found.getPhoneNumber());
+        assertFalse(found.isEmpty());
+        assertTrue(found.stream().anyMatch(s -> "123456789".equals(s.getPhoneNumber())));
     }
 }

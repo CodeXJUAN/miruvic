@@ -6,12 +6,10 @@ import java.time.*;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
-import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.ReservationRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.*;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
@@ -35,11 +33,14 @@ public class JdbcReservationRepository implements ReservationRepository {
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            // Asumimos que solo hay un estudiante y una habitación en la reserva
-            Student student = reservation.getStudent().iterator().next();
-            Room room = reservation.getRoom().iterator().next();
-            
+
+            Student student = reservation.getStudent().stream().findFirst().orElse(null);
+            Room room = reservation.getRoom().stream().findFirst().orElse(null);
+
+            if (student == null || room == null) {
+                throw new RepositoryException("La reserva debe tener al menos un estudiante y una habitación");
+            }
+
             stmt.setInt(1, student.getId());
             stmt.setInt(2, room.getId());
             stmt.setDate(3, java.sql.Date.valueOf(reservation.getStartDate()));
@@ -59,56 +60,20 @@ public class JdbcReservationRepository implements ReservationRepository {
                     }
                 }
             }
-            
-            // Guardar los servicios asociados a la reserva
-            saveReservationServices(reservation);
-            
+
         } catch (SQLException e) {
             throw new RepositoryException("Error al guardar la reserva", e);
-        }
-    }
-    
-    private void saveReservationServices(Reservation reservation) {
-        // Primero eliminamos los servicios existentes para esta reserva
-        String deleteSql = "DELETE FROM RESERVATION_SERVICE WHERE reservation_id = ?";
-        
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
-            stmt.setInt(1, reservation.getId());
-            stmt.executeUpdate();
-            
-            // Ahora insertamos los nuevos servicios
-            if (reservation.getServices() != null && !reservation.getServices().isEmpty()) {
-                String insertSql = "INSERT INTO RESERVATION_SERVICE (reservation_id, service_id) VALUES (?, ?)";
-                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                    for (Service service : reservation.getServices()) {
-                        insertStmt.setInt(1, reservation.getId());
-                        insertStmt.setInt(2, service.getId());
-                        insertStmt.executeUpdate();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RepositoryException("Error al guardar los servicios de la reserva", e);
         }
     }
 
     @Override
     public void delete(Reservation reservation) {
-        // Primero eliminamos los servicios asociados
-        String deleteServicesSql = "DELETE FROM RESERVATION_SERVICE WHERE reservation_id = ?";
-        
+        String deleteReservationSql = "DELETE FROM RESERVATION WHERE id = ?";
+
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteServicesSql)) {
-            stmt.setInt(1, reservation.getId());
-            stmt.executeUpdate();
-            
-            // Ahora eliminamos la reserva
-            String deleteReservationSql = "DELETE FROM RESERVATION WHERE id = ?";
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteReservationSql)) {
-                deleteStmt.setInt(1, reservation.getId());
-                deleteStmt.executeUpdate();
-            }
+             PreparedStatement deleteStmt = conn.prepareStatement(deleteReservationSql)) {
+            deleteStmt.setInt(1, reservation.getId());
+            deleteStmt.executeUpdate();
         } catch (SQLException e) {
             throw new RepositoryException("Error al eliminar la reserva", e);
         }
@@ -116,13 +81,15 @@ public class JdbcReservationRepository implements ReservationRepository {
 
     @Override
     public Reservation get(Integer id) {
-        String sql = "SELECT r.*, s.id as student_id, s.name as student_name, s.surname as student_surname, " +
-                    "s.email as student_email, s.phone as student_phone, " +
-                    "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
-                    "FROM RESERVATION r " +
-                    "JOIN STUDENT s ON r.student_id = s.id " +
-                    "JOIN ROOM rm ON r.room_id = rm.id_room " +
-                    "WHERE r.id = ?";
+        String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
+                "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
+                "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
+                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "FROM RESERVATION r " +
+                "JOIN STUDENT s ON r.student_id = s.id " +
+                "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
+                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "WHERE r.id = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -130,9 +97,7 @@ public class JdbcReservationRepository implements ReservationRepository {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    Reservation reservation = mapResultSetToReservation(rs);
-                    loadReservationServices(reservation);
-                    return reservation;
+                    return mapResultSetToReservation(rs);
                 }
             }
         } catch (SQLException e) {
@@ -140,49 +105,24 @@ public class JdbcReservationRepository implements ReservationRepository {
         }
         throw new EntityNotFoundException("Reservation not found with id: " + id);
     }
-    
-    private void loadReservationServices(Reservation reservation) {
-        String sql = "SELECT s.* FROM SERVICE s " +
-                    "JOIN RESERVATION_SERVICE rs ON s.id = rs.service_id " +
-                    "WHERE rs.reservation_id = ?";
-                    
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, reservation.getId());
-            
-            Set<Service> services = new HashSet<>();
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Service service = new ServiceImpl();
-                    service.setId(rs.getInt("id"));
-                    service.setServiceName(rs.getString("name"));
-                    service.setDescription(rs.getString("description"));
-                    service.setPrice(rs.getBigDecimal("price"));
-                    services.add(service);
-                }
-            }
-            reservation.setServices(services);
-        } catch (SQLException e) {
-            throw new RepositoryException("Error al cargar los servicios de la reserva", e);
-        }
-    }
 
     @Override
     public Set<Reservation> getAll() {
         Set<Reservation> reservations = new HashSet<>();
-        String sql = "SELECT r.*, s.id as student_id, s.name as student_name, s.surname as student_surname, " +
-                    "s.email as student_email, s.phone as student_phone, " +
-                    "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
-                    "FROM RESERVATION r " +
-                    "JOIN STUDENT s ON r.student_id = s.id " +
-                    "JOIN ROOM rm ON r.room_id = rm.id_room";
+        String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
+                "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
+                "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
+                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "FROM RESERVATION r " +
+                "JOIN STUDENT s ON r.student_id = s.id " +
+                "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
+                "JOIN ROOM rm ON r.room_id = rm.id_room";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Reservation reservation = mapResultSetToReservation(rs);
-                loadReservationServices(reservation);
                 reservations.add(reservation);
             }
         } catch (SQLException e) {
@@ -194,13 +134,15 @@ public class JdbcReservationRepository implements ReservationRepository {
     @Override
     public List<Reservation> findByDate(LocalDate date) {
         List<Reservation> reservations = new ArrayList<>();
-        String sql = "SELECT r.*, s.id as student_id, s.name as student_name, s.surname as student_surname, " +
-                    "s.email as student_email, s.phone as student_phone, " +
-                    "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
-                    "FROM RESERVATION r " +
-                    "JOIN STUDENT s ON r.student_id = s.id " +
-                    "JOIN ROOM rm ON r.room_id = rm.id_room " +
-                    "WHERE r.start_date <= ? AND r.end_date >= ?";
+        String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
+                "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
+                "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
+                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "FROM RESERVATION r " +
+                "JOIN STUDENT s ON r.student_id = s.id " +
+                "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
+                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "WHERE r.start_date <= ? AND r.end_date >= ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -210,7 +152,6 @@ public class JdbcReservationRepository implements ReservationRepository {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Reservation reservation = mapResultSetToReservation(rs);
-                    loadReservationServices(reservation);
                     reservations.add(reservation);
                 }
             }
@@ -223,29 +164,30 @@ public class JdbcReservationRepository implements ReservationRepository {
     @Override
     public List<Reservation> findByStudentId(Integer studentId) {
         List<Reservation> reservations = new ArrayList<>();
-        String sql = "SELECT r.*, s.id as student_id, s.name as student_name, s.surname as student_surname, " +
-                    "s.email as student_email, s.phone as student_phone, " +
-                    "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
-                    "FROM RESERVATION r " +
-                    "JOIN STUDENT s ON r.student_id = s.id " +
-                    "JOIN ROOM rm ON r.room_id = rm.id_room " +
-                    "WHERE r.student_id = ?";
-        
+        String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
+                "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
+                "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
+                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "FROM RESERVATION r " +
+                "JOIN STUDENT s ON r.student_id = s.id " +
+                "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
+                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "WHERE r.student_id = ?";
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, studentId);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Reservation reservation = mapResultSetToReservation(rs);
-                    loadReservationServices(reservation);
                     reservations.add(reservation);
                 }
             }
         } catch (SQLException e) {
             throw new RepositoryException("Error al buscar reservas por ID de estudiante", e);
         }
-        
+
         return reservations;
     }
 
@@ -263,16 +205,19 @@ public class JdbcReservationRepository implements ReservationRepository {
         student.setEmail(rs.getString("student_email"));
         student.setPhoneNumber(rs.getString("student_phone"));
 
-        AddressImpl address = new AddressImpl();
-        address.setId(rs.getInt("id"));
-        address.setStreet(rs.getString("street"));
-        address.setCity(rs.getString("city"));
-        address.setZipCode(rs.getString("zip_code"));
-        address.setCountry(rs.getString("country"));
-        student.setAddress(Set.of(address));
-        Set<Student> students = new HashSet<>();
-        students.add(student);
-        reservation.setStudent(students);
+        int addressId = rs.getInt("address_id");
+        if (!rs.wasNull() && addressId != 0) {
+            AddressImpl address = new AddressImpl();
+            address.setId(addressId);
+            address.setStreet(rs.getString("street"));
+            address.setCity(rs.getString("city"));
+            address.setState(rs.getString("state"));
+            address.setZipCode(rs.getString("zip_code"));
+            address.setCountry(rs.getString("country"));
+            student.setAddress(Set.of(address));
+        }
+
+        reservation.setStudent(Set.of(student));
 
         RoomImpl room = new RoomImpl();
         room.setId(rs.getInt("room_id"));
@@ -281,9 +226,7 @@ public class JdbcReservationRepository implements ReservationRepository {
         room.setCapacity(rs.getInt("capacity"));
         room.setType(rs.getString("room_type"));
         room.setPrice(rs.getBigDecimal("room_price"));
-        Set<Room> rooms = new HashSet<>();
-        rooms.add(room);
-        reservation.setRoom(rooms);
+        reservation.setRoom(Set.of(room));
 
         return reservation;
     }

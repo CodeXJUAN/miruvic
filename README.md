@@ -1,6 +1,7 @@
 # miruvic
 
 ## Table of Contents
+
 - [About](#about)
 - [Description](#description)
 - [Project Structure](#project-structure)
@@ -8,9 +9,12 @@
 - [Version](#version)
 - [Notes](#notes)
 
+## About
+
 ## Description
 
 ## Project Structure
+
 ```
 /miruvic
 ├── app/                  
@@ -57,12 +61,12 @@
 ```
 
 ## Installation
+
 ## Version
 
 | Versions |Description|
 |----------|-----------|
 | 1.0.0    | First Version  |
-
 
 ## Notes
 

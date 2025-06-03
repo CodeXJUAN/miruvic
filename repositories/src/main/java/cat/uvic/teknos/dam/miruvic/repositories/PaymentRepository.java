@@ -2,8 +2,10 @@ package cat.uvic.teknos.dam.miruvic.repositories;
 
 import cat.uvic.teknos.dam.miruvic.model.Payment;
 
-public interface PaymentRepository extends Repository<Integer, Payment> {
-    Payment findByMethod(String method);
+import java.util.List;
 
-    Payment findByAmountRange(double min, double max);
+public interface PaymentRepository extends Repository<Integer, Payment> {
+    List<Payment> findByMethod(String method);
+
+    List<Payment> findByAmountRange(double min, double max);
 }

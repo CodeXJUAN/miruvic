@@ -8,6 +8,7 @@ import cat.uvic.teknos.dam.miruvic.model.ReservationService;
 public class JdbcReservationService implements ReservationService {
     private Set<Reservation> reservation;
     private Set<Service> services;
+    private Integer quantity;
 
     @Override
     public Set<Reservation> getReservation() {
@@ -27,5 +28,15 @@ public class JdbcReservationService implements ReservationService {
     @Override
     public void setService(Set<Service> services) {
         this.services = services;
+    }
+
+    @Override
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    @Override
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }

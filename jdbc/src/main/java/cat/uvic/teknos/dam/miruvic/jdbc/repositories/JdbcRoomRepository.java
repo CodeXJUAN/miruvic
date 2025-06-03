@@ -3,7 +3,9 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Room;
+import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.RoomRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
@@ -20,27 +22,37 @@ public class JdbcRoomRepository implements RoomRepository {
     @Override
     public void save(Room room) {
         String sql;
-        if (room.getId() == null || room.getId() == 0) {
-            sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price) VALUES (?, ?, ?, ?, ?)";
+        boolean isInsert = room.getId() == null || room.getId() == 0;
+        if (isInsert) {
+            sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price, reservation_id) VALUES (?, ?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
+            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ?, reservation_id = ? WHERE id_room = ?";
         }
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            Reservation reservation = room.getReservations().stream().findFirst().orElse(null);
+            Integer reservationId = reservation != null ? reservation.getId() : null;
+
             stmt.setString(1, room.getRoomNumber());
             stmt.setInt(2, room.getFloor());
             stmt.setInt(3, room.getCapacity());
             stmt.setString(4, room.getType());
             stmt.setBigDecimal(5, room.getPrice());
+            if (reservationId != null) {
+                stmt.setInt(6, reservationId);
+            } else {
+                stmt.setNull(6, java.sql.Types.INTEGER);
+            }
 
-            if (room.getId() != null && room.getId() != 0) {
-                stmt.setInt(6, room.getId());
+            if (!isInsert) {
+                stmt.setInt(7, room.getId());
             }
 
             stmt.executeUpdate();
 
-            if (room.getId() == null || room.getId() == 0) {
+            if (isInsert) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         room.setId(generatedKeys.getInt(1));
@@ -54,20 +66,18 @@ public class JdbcRoomRepository implements RoomRepository {
 
     @Override
     public void delete(Room room) {
-        // Primero verificamos si la habitación está asociada a alguna reserva
         String checkSql = "SELECT COUNT(*) FROM RESERVATION WHERE room_id = ?";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setInt(1, room.getId());
-            
+
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
                     throw new RepositoryException("No se puede eliminar la habitación porque está asociada a reservas");
                 }
             }
-            
-            // Si no hay reservas asociadas, eliminamos la habitación
+
             String deleteSql = "DELETE FROM ROOM WHERE id_room = ?";
             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
                 deleteStmt.setInt(1, room.getId());
@@ -115,51 +125,62 @@ public class JdbcRoomRepository implements RoomRepository {
     }
 
     @Override
-    public Room findByNumber(String number) {
+    public List<Room> findByNumber(String number) {
+        List<Room> rooms = new ArrayList<>();
         String sql = "SELECT * FROM ROOM WHERE room_number = ?";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, number);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToRoom(rs);
+                while (rs.next()) {
+                    rooms.add(mapResultSetToRoom(rs));
                 }
             }
         } catch (SQLException e) {
             throw new RepositoryException("Error al buscar habitación por número", e);
         }
-        throw new EntityNotFoundException("Habitación con número '" + number + "' no encontrada");
+        return rooms;
     }
 
     @Override
-    public Room findByType(String type) {
+    public List<Room> findByType(String type) {
+        List<Room> rooms = new ArrayList<>();
         String sql = "SELECT * FROM ROOM WHERE room_type = ?";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, type);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToRoom(rs);
+                while (rs.next()) {
+                    rooms.add(mapResultSetToRoom(rs));
                 }
             }
         } catch (SQLException e) {
             throw new RepositoryException("Error al buscar habitación por tipo", e);
         }
-        throw new EntityNotFoundException("Habitación con tipo '" + type + "' no encontrada");
+        return rooms;
     }
-    
+
     private Room mapResultSetToRoom(ResultSet rs) throws SQLException {
         Room room = new RoomImpl();
-        room.setId(rs.getInt("id_room"));
-        room.setRoomNumber(rs.getString("room_number"));
-        room.setFloor(rs.getInt("floor"));
-        room.setCapacity(rs.getInt("capacity"));
-        room.setType(rs.getString("room_type"));
-        room.setPrice(rs.getBigDecimal("price"));
+        try {
+            room.setId(rs.getInt("id_room"));
+            room.setRoomNumber(rs.getString("room_number"));
+            room.setFloor(rs.getInt("floor"));
+            room.setCapacity(rs.getInt("capacity"));
+            room.setType(rs.getString("room_type"));
+            room.setPrice(rs.getBigDecimal("price"));
+            Reservation reservation = new ReservationImpl();
+            reservation.setId(rs.getInt("id_reservation"));
+
+            room.setReservations(Set.of(reservation));
+        } catch (SQLException e) {
+            throw new RepositoryException("Error mapping payment", e);
+        }
         return room;
     }
+
 }

@@ -10,7 +10,6 @@ public interface Reservation {
     LocalDate getStartDate();
     LocalDate getEndDate();
     String getStatus();
-    Set<Service> getServices();
 
     void setId(Integer id);
     void setStudent(Set<Student> student);
@@ -18,5 +17,4 @@ public interface Reservation {
     void setStartDate(LocalDate startDate);
     void setEndDate(LocalDate endDate);
     void setStatus(String status);
-    void setServices(Set<Service> services);
 }

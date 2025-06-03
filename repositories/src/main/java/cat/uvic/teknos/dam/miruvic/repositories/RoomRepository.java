@@ -2,8 +2,10 @@ package cat.uvic.teknos.dam.miruvic.repositories;
 
 import cat.uvic.teknos.dam.miruvic.model.Room;
 
-public interface RoomRepository extends Repository<Integer, Room> {
-    Room findByNumber(String number);
+import java.util.List;
 
-    Room findByType(String type);
+public interface RoomRepository extends Repository<Integer, Room> {
+    List<Room> findByNumber(String number);
+
+    List<Room> findByType(String type);
 }

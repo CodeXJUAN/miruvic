@@ -2,8 +2,10 @@ package cat.uvic.teknos.dam.miruvic.repositories;
 
 import cat.uvic.teknos.dam.miruvic.model.Service;
 
-public interface ServiceRepository extends Repository<Integer, Service> {
-    Service findByName(String name);
+import java.util.List;
 
-    Service findByType(String type);
+public interface ServiceRepository extends Repository<Integer, Service> {
+    List<Service> findByName(String name);
+
+    List<Service> findByType(String type);
 }

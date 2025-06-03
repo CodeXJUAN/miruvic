@@ -1,23 +1,25 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 public interface Room {
 
-    public Integer getId();
-    public String getRoomNumber();
-    public Integer getFloor();
-    public Integer getCapacity();
-    public String getType();
-    public BigDecimal getPrice();
+    Integer getId();
+    String getRoomNumber();
+    Integer getFloor();
+    Integer getCapacity();
+    String getType();
+    BigDecimal getPrice();
+    Set<Reservation> getReservations();
 
 
 
-    public void setId(Integer id);
-    public void setRoomNumber(String roomNumber);
-    public void setFloor(Integer floor);
-    public void setCapacity(Integer capacity);
-    public void setType(String type);
-    public void setPrice(BigDecimal price);
-
+    void setId(Integer id);
+    void setRoomNumber(String roomNumber);
+    void setFloor(Integer floor);
+    void setCapacity(Integer capacity);
+    void setType(String type);
+    void setPrice(BigDecimal price);
+    void setReservations(Set<Reservation> reservations);
 }

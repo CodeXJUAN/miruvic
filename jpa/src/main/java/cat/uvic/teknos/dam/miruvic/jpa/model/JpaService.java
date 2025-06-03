@@ -1,4 +1,4 @@
-package cat.uvic.teknos.dam.miruvic.model.jpa;
+package cat.uvic.teknos.dam.miruvic.jpa.model;
 
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import jakarta.persistence.*;
@@ -20,12 +20,12 @@ public class JpaService implements Service {
     @Column(name = "id")
     private Integer id;
     
-    @Column(name = "service_name")
+    @Column(name = "name", nullable = false)
     private String serviceName;
     
     @Column(name = "description")
     private String description;
     
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
 }

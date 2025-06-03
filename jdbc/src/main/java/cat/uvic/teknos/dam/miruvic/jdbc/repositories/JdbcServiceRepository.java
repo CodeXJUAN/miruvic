@@ -25,19 +25,19 @@ public class JdbcServiceRepository implements ServiceRepository {
         } else {
             sql = "UPDATE SERVICE SET name = ?, description = ?, price = ? WHERE id = ?";
         }
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, service.getServiceName());
             stmt.setString(2, service.getDescription());
             stmt.setBigDecimal(3, service.getPrice());
-            
+
             if (service.getId() != null && service.getId() != 0) {
                 stmt.setInt(4, service.getId());
             }
-            
+
             stmt.executeUpdate();
-            
+
             if (service.getId() == null || service.getId() == 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
@@ -52,16 +52,14 @@ public class JdbcServiceRepository implements ServiceRepository {
 
     @Override
     public void delete(Service service) {
-        // Primero verificamos si el servicio está asociado a alguna reserva
         String checkSql = "SELECT COUNT(*) FROM RESERVATION_SERVICE WHERE service_id = ?";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
             checkStmt.setInt(1, service.getId());
-            
+
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
-                    // Si hay reservas asociadas, primero eliminamos esas relaciones
                     String deleteRelationSql = "DELETE FROM RESERVATION_SERVICE WHERE service_id = ?";
                     try (PreparedStatement deleteRelationStmt = conn.prepareStatement(deleteRelationSql)) {
                         deleteRelationStmt.setInt(1, service.getId());
@@ -69,8 +67,7 @@ public class JdbcServiceRepository implements ServiceRepository {
                     }
                 }
             }
-            
-            // Ahora eliminamos el servicio
+
             String deleteSql = "DELETE FROM SERVICE WHERE id = ?";
             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
                 deleteStmt.setInt(1, service.getId());
@@ -84,11 +81,11 @@ public class JdbcServiceRepository implements ServiceRepository {
     @Override
     public Service get(Integer id) {
         String sql = "SELECT * FROM SERVICE WHERE id = ?";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
-            
+
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToService(rs);
@@ -104,7 +101,7 @@ public class JdbcServiceRepository implements ServiceRepository {
     public Set<Service> getAll() {
         Set<Service> services = new HashSet<>();
         String sql = "SELECT * FROM SERVICE";
-        
+
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -118,41 +115,43 @@ public class JdbcServiceRepository implements ServiceRepository {
     }
 
     @Override
-    public Service findByName(String name) {
+    public List<Service> findByName(String name) {
+        List<Service> services = new ArrayList<>();
         String sql = "SELECT * FROM SERVICE WHERE name = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, name);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToService(rs);
+                while (rs.next()) {
+                    services.add(mapResultSetToService(rs));
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Error al buscar servicio por nombre", e);
+            throw new RepositoryException("Error al buscar servicios por nombre", e);
         }
-        throw new EntityNotFoundException("Servicio con nombre '" + name + "' no encontrado");
+        return services;
     }
 
     @Override
-    public Service findByType(String type) {
+    public List<Service> findByType(String type) {
+        List<Service> services = new ArrayList<>();
         String sql = "SELECT * FROM SERVICE WHERE type = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, type);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToService(rs);
+                while (rs.next()) {
+                    services.add(mapResultSetToService(rs));
                 }
             }
         } catch (SQLException e) {
-            throw new RepositoryException("Error al buscar servicio por tipo", e);
+            throw new RepositoryException("Error al buscar servicios por tipo", e);
         }
-        throw new EntityNotFoundException("Servicio con tipo '" + type + "' no encontrado");
+        return services;
     }
-    
+
     private Service mapResultSetToService(ResultSet rs) throws SQLException {
-        Service service = new ServiceImpl();
+        ServiceImpl service = new ServiceImpl();
         service.setId(rs.getInt("id"));
         service.setServiceName(rs.getString("name"));
         service.setDescription(rs.getString("description"));

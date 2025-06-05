@@ -1,8 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
-import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.ReservationService;
 import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.ServiceImpl;
@@ -23,8 +21,8 @@ public class JdbcReservationServiceRepository implements ReservationServiceRepos
 
     @Override
     public void save(ReservationService reservationService) {
-        Integer reservationId = reservationService.getReservation().stream().findFirst().map(Reservation::getId).orElse(null);
-        Integer serviceId = reservationService.getService().stream().findFirst().map(Service::getId).orElse(null);
+        Integer reservationId = reservationService.getReservation() != null ? reservationService.getReservation().getId() : null;
+        Integer serviceId = reservationService.getService() != null ? reservationService.getService().getId() : null;
         Integer quantity = reservationService.getQuantity();
 
         if (reservationId == null || serviceId == null) {
@@ -68,8 +66,8 @@ public class JdbcReservationServiceRepository implements ReservationServiceRepos
 
     @Override
     public void delete(ReservationService reservationService) {
-        Integer reservationId = reservationService.getReservation().stream().findFirst().map(Reservation::getId).orElse(null);
-        Integer serviceId = reservationService.getService().stream().findFirst().map(Service::getId).orElse(null);
+        Integer reservationId = reservationService.getReservation() != null ? reservationService.getReservation().getId() : null;
+        Integer serviceId = reservationService.getService() != null ? reservationService.getService().getId() : null;
 
         if (reservationId == null || serviceId == null) {
             throw new RepositoryException("reservation_id y service_id no pueden ser nulos");
@@ -160,11 +158,11 @@ public class JdbcReservationServiceRepository implements ReservationServiceRepos
 
         ReservationImpl reservation = new ReservationImpl();
         reservation.setId(rs.getInt("reservation_id"));
-        reservationService.setReservation(Set.of(reservation));
+        reservationService.setReservation(reservation);
 
         ServiceImpl service = new ServiceImpl();
         service.setId(rs.getInt("service_id"));
-        reservationService.setService(Set.of(service));
+        reservationService.setService(service);
 
         reservationService.setQuantity(rs.getInt("quantity"));
 

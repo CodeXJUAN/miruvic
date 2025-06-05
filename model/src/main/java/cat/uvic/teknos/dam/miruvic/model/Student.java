@@ -1,7 +1,5 @@
 package cat.uvic.teknos.dam.miruvic.model;
 
-import java.util.Set;
-
 public interface Student {
     Integer getId();
     String getFirstName();
@@ -9,8 +7,8 @@ public interface Student {
     String getEmail();
     String getPasswordHash();
     String getPhoneNumber();
-    Set<Address> getAddress();
-    Set<Reservation> getReservations();
+    Address getAddress();
+    Reservation getReservation();
 
     void setId(Integer id);
     void setFirstName(String firstName);
@@ -18,6 +16,6 @@ public interface Student {
     void setEmail(String email);
     void setPasswordHash(String passwordHash);
     void setPhoneNumber(String phoneNumber);
-    void setAddress(Set<Address> address);
-    void setReservations(Set<Reservation> reservations);
+    void setAddress(Address address);
+    void setReservation(Reservation reservation);
 }

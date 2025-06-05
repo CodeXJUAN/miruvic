@@ -9,11 +9,16 @@ plugins {
 dependencies {
     implementation(project(":model"))
     implementation(project(":repositories"))
+    implementation(project(":jdbc"))
+
 
     implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
     implementation("org.hibernate.orm:hibernate-core:7.0.0.Final")
     implementation("com.mysql:mysql-connector-j:9.3.0")
 
+
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
+
+    testImplementation("com.h2database:h2:2.3.232")
 }

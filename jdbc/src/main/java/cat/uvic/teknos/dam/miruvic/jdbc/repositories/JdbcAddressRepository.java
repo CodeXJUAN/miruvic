@@ -19,7 +19,7 @@ public class JdbcAddressRepository implements AddressRepository {
     @Override
     public void save(Address value) {
         String sql;
-        if (value.getId() == 0) {
+        if (value.getId() == null || value.getId() == 0) {
             sql = "INSERT INTO ADDRESS (street, city, state, zip_code, country) VALUES (?, ?, ?, ?, ?)";
         } else {
             sql = "UPDATE ADDRESS SET street = ?, city = ?, state = ?, zip_code = ?, country = ? WHERE id = ?";
@@ -33,13 +33,13 @@ public class JdbcAddressRepository implements AddressRepository {
             stmt.setString(4, value.getZipCode());
             stmt.setString(5, value.getCountry());
 
-            if (value.getId() != 0) {
+            if (value.getId() != null && value.getId() != 0) {
                 stmt.setInt(6, value.getId());
             }
 
             stmt.executeUpdate();
 
-            if (value.getId() == 0) {
+            if (value.getId() == null || value.getId() == 0) {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         value.setId(generatedKeys.getInt(1));
@@ -66,7 +66,7 @@ public class JdbcAddressRepository implements AddressRepository {
 
     @Override
     public Address get(Integer id) {
-        Address address = new AddressImpl();
+        Address address = null;
         String sql = "SELECT * FROM ADDRESS WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();

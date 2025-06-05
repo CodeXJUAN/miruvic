@@ -39,18 +39,14 @@ public class JdbcStudentRepository implements StudentRepository {
             stmt.setString(4, student.getPasswordHash());
             stmt.setString(5, student.getPhoneNumber());
 
-            Address address = student.getAddress() != null
-                    ? student.getAddress().stream().findFirst().orElse(null)
-                    : null;
+            Address address = student.getAddress();
             if (address != null) {
                 stmt.setInt(6, address.getId());
             } else {
                 stmt.setNull(6, Types.INTEGER);
             }
 
-            Reservation reservation = student.getReservations() != null
-                    ? student.getReservations().stream().findFirst().orElse(null)
-                    : null;
+            Reservation reservation = student.getReservation();
             if (reservation != null) {
                 stmt.setInt(7, reservation.getId());
             } else {
@@ -100,14 +96,14 @@ public class JdbcStudentRepository implements StudentRepository {
             if (!rs.wasNull() && addressId != 0) {
                 Address address = new AddressImpl();
                 address.setId(addressId);
-                student.setAddress(Set.of(address));
+                student.setAddress(address);
             }
 
             int reservationId = rs.getInt("reservation_id");
             if (!rs.wasNull() && reservationId != 0) {
                 Reservation reservation = new ReservationImpl();
                 reservation.setId(reservationId);
-                student.setReservations(Set.of(reservation));
+                student.setReservation(reservation);
             }
 
         } catch (SQLException e) {

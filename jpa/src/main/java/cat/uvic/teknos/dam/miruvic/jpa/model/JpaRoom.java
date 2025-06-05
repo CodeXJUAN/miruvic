@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -14,28 +13,24 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class JpaRoom implements Room {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
-    
+
     @Column(name = "room_number", nullable = false, unique = true)
     private String roomNumber;
-    
+
     @Column(name = "floor", nullable = false)
     private Integer floor;
-    
+
     @Column(name = "capacity", nullable = false)
     private Integer capacity;
-    
+
     @Column(name = "type", nullable = false)
     private String type;
-    
+
     @Column(name = "price", nullable = false)
     private BigDecimal price;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "reservation_id", nullable = false)
-    private JpaReservation reservation;
 }

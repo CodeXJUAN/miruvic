@@ -10,6 +10,7 @@ public class JdbcAddress implements Address {
     private String zipCode;
     private String country;
 
+
     @Override
     public Integer getId() {
         return id;

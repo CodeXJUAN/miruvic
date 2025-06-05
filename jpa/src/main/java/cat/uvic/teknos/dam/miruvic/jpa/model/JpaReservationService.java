@@ -1,11 +1,9 @@
 package cat.uvic.teknos.dam.miruvic.jpa.model;
 
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.ReservationService;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Service;
 import jakarta.persistence.*;
-import java.util.Collections;
-import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +16,7 @@ import lombok.Setter;
 public class JpaReservationService implements ReservationService {
 
     @EmbeddedId
-    private JpaReservationServiceId id;
+    private ReservationServiceId id = new ReservationServiceId();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("reservationId")
@@ -34,36 +32,28 @@ public class JpaReservationService implements ReservationService {
     private Integer quantity = 1;
 
     @Override
-    public Set<Reservation> getReservation() {
-        return reservation == null ? Collections.emptySet() : Set.of(reservation);
+    public Reservation getReservation() {
+        return reservation;
     }
 
     @Override
-    public void setReservation(Set<Reservation> reservations) {
-        if (reservations != null && !reservations.isEmpty()) {
-            Reservation res = reservations.iterator().next();
-            if (res instanceof JpaReservation) {
-                this.reservation = (JpaReservation) res;
-            } else {
-                throw new IllegalArgumentException("Reservation must be a JpaReservation instance");
-            }
+    public void setReservation(Reservation reservation) {
+        if (reservation instanceof JpaReservation) {
+            this.reservation = (JpaReservation) reservation;
+            this.id.setReservationId(this.reservation.getId());
         }
     }
 
     @Override
-    public Set<Service> getService() {
-        return service == null ? java.util.Collections.emptySet() : java.util.Set.of(service);
+    public Service getService() {
+        return service;
     }
 
     @Override
-    public void setService(Set<Service> services) {
-        if (services != null && !services.isEmpty()) {
-            Service s = services.iterator().next();
-            if (s instanceof JpaService) {
-                this.service = (JpaService) s;
-            } else {
-                throw new IllegalArgumentException("Service must be a JpaService instance");
-            }
+    public void setService(Service service) {
+        if (service instanceof JpaService) {
+            this.service = (JpaService) service;
+            this.id.setServiceId(this.service.getId());
         }
     }
 }

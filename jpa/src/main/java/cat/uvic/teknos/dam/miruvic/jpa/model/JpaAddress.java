@@ -8,12 +8,13 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "ADDRESS")
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 public class JpaAddress implements Address {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
@@ -31,7 +32,4 @@ public class JpaAddress implements Address {
 
     @Column(name = "country", nullable = false)
     private String country;
-
-    @OneToOne(mappedBy = "address")
-    private JpaStudent student;
 }

@@ -1,18 +1,13 @@
 package cat.uvic.teknos.dam.miruvic.jpa.model;
 
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
-import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.Student;
+import cat.uvic.teknos.dam.miruvic.model.Room;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "RESERVATION")
@@ -20,7 +15,6 @@ import java.util.Set;
 @Getter
 @Setter
 public class JpaReservation implements Reservation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -30,7 +24,7 @@ public class JpaReservation implements Reservation {
     @JoinColumn(name = "student_id", nullable = false)
     private JpaStudent student;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "room_id", nullable = false)
     private JpaRoom room;
 
@@ -42,4 +36,28 @@ public class JpaReservation implements Reservation {
 
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Override
+    public Student getStudent() {
+        return student;
+    }
+
+    @Override
+    public void setStudent(Student student) {
+        if (student instanceof JpaStudent) {
+            this.student = (JpaStudent) student;
+        }
+    }
+
+    @Override
+    public Room getRoom() {
+        return room;
+    }
+
+    @Override
+    public void setRoom(Room room) {
+        if (room instanceof JpaRoom) {
+            this.room = (JpaRoom) room;
+        }
+    }
 }

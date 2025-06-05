@@ -2,16 +2,14 @@ package cat.uvic.teknos.dam.miruvic.model.impl;
 
 import cat.uvic.teknos.dam.miruvic.model.Student;
 import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.Service;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 public class ReservationImpl implements Reservation {
     private Integer id;
-    private Set<Student> student;
-    private Set<Room> room;
+    private Student student;
+    private Room room;
     private LocalDate startDate;
     private LocalDate endDate;
     private String status;
@@ -27,22 +25,22 @@ public class ReservationImpl implements Reservation {
     }
 
     @Override
-    public Set<Student> getStudent() {
-        return Set.of();
+    public Student getStudent() {
+        return student;
     }
 
     @Override
-    public void setStudent(Set<Student> student) {
+    public void setStudent(Student student) {
         this.student = student;
     }
 
     @Override
-    public Set<Room> getRoom() {
-        return Set.of();
+    public Room getRoom() {
+        return room;
     }
 
     @Override
-    public void setRoom(Set<Room> room) {
+    public void setRoom(Room room) {
         this.room = room;
     }
 

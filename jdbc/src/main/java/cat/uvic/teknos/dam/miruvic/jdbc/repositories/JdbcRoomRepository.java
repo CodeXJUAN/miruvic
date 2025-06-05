@@ -3,9 +3,7 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 import java.sql.*;
 import java.util.*;
 
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Room;
-import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.RoomImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.RoomRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
@@ -24,30 +22,22 @@ public class JdbcRoomRepository implements RoomRepository {
         String sql;
         boolean isInsert = room.getId() == null || room.getId() == 0;
         if (isInsert) {
-            sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price, reservation_id) VALUES (?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price) VALUES (?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ?, reservation_id = ? WHERE id_room = ?";
+            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
         }
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            Reservation reservation = room.getReservations().stream().findFirst().orElse(null);
-            Integer reservationId = reservation != null ? reservation.getId() : null;
 
             stmt.setString(1, room.getRoomNumber());
             stmt.setInt(2, room.getFloor());
             stmt.setInt(3, room.getCapacity());
             stmt.setString(4, room.getType());
             stmt.setBigDecimal(5, room.getPrice());
-            if (reservationId != null) {
-                stmt.setInt(6, reservationId);
-            } else {
-                stmt.setNull(6, java.sql.Types.INTEGER);
-            }
 
             if (!isInsert) {
-                stmt.setInt(7, room.getId());
+                stmt.setInt(6, room.getId());
             }
 
             stmt.executeUpdate();
@@ -173,14 +163,9 @@ public class JdbcRoomRepository implements RoomRepository {
             room.setCapacity(rs.getInt("capacity"));
             room.setType(rs.getString("room_type"));
             room.setPrice(rs.getBigDecimal("price"));
-            Reservation reservation = new ReservationImpl();
-            reservation.setId(rs.getInt("id_reservation"));
-
-            room.setReservations(Set.of(reservation));
         } catch (SQLException e) {
-            throw new RepositoryException("Error mapping payment", e);
+            throw new RepositoryException("Error mapping room", e);
         }
         return room;
     }
-
 }

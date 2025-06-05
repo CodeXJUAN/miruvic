@@ -14,7 +14,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
-    testImplementation("com.h2database:h2:2.2.220")
+    testImplementation("com.h2database:h2:2.3.232")
 }
 
 tasks.test {

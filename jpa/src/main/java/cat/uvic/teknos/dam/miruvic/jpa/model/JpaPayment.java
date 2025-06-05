@@ -1,25 +1,24 @@
 package cat.uvic.teknos.dam.miruvic.jpa.model;
 
-import cat.uvic.teknos.dam.miruvic.model.Payment;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import cat.uvic.teknos.dam.miruvic.model.Payment;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
 
 @Entity
 @Table(name = "PAYMENT")
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 public class JpaPayment implements Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -37,4 +36,16 @@ public class JpaPayment implements Payment {
 
     @Column(name = "status", nullable = false)
     private String status;
+
+    @Override
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    @Override
+    public void setReservation(Reservation reservation) {
+        if (reservation instanceof JpaReservation) {
+            this.reservation = (JpaReservation) reservation;
+        }
+    }
 }

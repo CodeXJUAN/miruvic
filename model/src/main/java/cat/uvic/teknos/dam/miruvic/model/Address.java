@@ -8,8 +8,6 @@ public interface Address {
     String getZipCode();
     String getCountry();
 
-
-
     void setId(Integer id);
     void setStreet(String street);
     void setCity(String city);

@@ -3,7 +3,6 @@ package cat.uvic.teknos.dam.miruvic.model.impl;
 import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
-import java.util.Set;
 
 public class StudentImpl implements Student {
     private Integer id;
@@ -12,8 +11,8 @@ public class StudentImpl implements Student {
     private String email;
     private String passwordHash;
     private String phoneNumber;
-    private Set<Address> address;
-    private Set<Reservation> reservations;
+    private Address address;
+    private Reservation reservation;
 
     @Override
     public Integer getId() { return id; }
@@ -52,14 +51,14 @@ public class StudentImpl implements Student {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
     @Override
-    public Set<Address> getAddress() { return Set.of(); }
+    public Address getAddress() { return address; }
 
     @Override
-    public void setAddress(Set<Address> address) { this.address = address; }
+    public void setAddress(Address address) { this.address = address; }
 
     @Override
-    public Set<Reservation> getReservations() { return Set.of(); }
+    public Reservation getReservation() { return reservation; }
 
     @Override
-    public void setReservations(Set<Reservation> reservations) { this.reservations = reservations;  }
+    public void setReservation(Reservation reservation) { this.reservation = reservation; }
 }

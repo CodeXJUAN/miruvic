@@ -34,11 +34,11 @@ public class JdbcReservationRepository implements ReservationRepository {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            Student student = reservation.getStudent().stream().findFirst().orElse(null);
-            Room room = reservation.getRoom().stream().findFirst().orElse(null);
+            Student student = reservation.getStudent();
+            Room room = reservation.getRoom();
 
             if (student == null || room == null) {
-                throw new RepositoryException("La reserva debe tener al menos un estudiante y una habitación");
+                throw new RepositoryException("La reserva debe tener un estudiante y una habitación");
             }
 
             stmt.setInt(1, student.getId());
@@ -214,10 +214,10 @@ public class JdbcReservationRepository implements ReservationRepository {
             address.setState(rs.getString("state"));
             address.setZipCode(rs.getString("zip_code"));
             address.setCountry(rs.getString("country"));
-            student.setAddress(Set.of(address));
+            student.setAddress(address);
         }
 
-        reservation.setStudent(Set.of(student));
+        reservation.setStudent(student);
 
         RoomImpl room = new RoomImpl();
         room.setId(rs.getInt("room_id"));
@@ -226,7 +226,7 @@ public class JdbcReservationRepository implements ReservationRepository {
         room.setCapacity(rs.getInt("capacity"));
         room.setType(rs.getString("room_type"));
         room.setPrice(rs.getBigDecimal("room_price"));
-        reservation.setRoom(Set.of(room));
+        reservation.setRoom(room);
 
         return reservation;
     }

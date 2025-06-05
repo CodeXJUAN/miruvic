@@ -1,25 +1,19 @@
 package cat.uvic.teknos.dam.miruvic.jpa.model;
 
-import cat.uvic.teknos.dam.miruvic.model.Address;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
+import cat.uvic.teknos.dam.miruvic.model.Reservation;
+import cat.uvic.teknos.dam.miruvic.model.Address;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.Set;
+import lombok.Data;
 
 @Entity
 @Table(name = "STUDENT")
-@NoArgsConstructor
-@Getter
-@Setter
+@Data
 public class JpaStudent implements Student {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "first_name", nullable = false)
@@ -34,14 +28,38 @@ public class JpaStudent implements Student {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "phone_number")
-    private String phone;
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
 
-    @OneToMany(mappedBy = "student", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "reservation_id")
-    private Set<JpaReservation> reservations;
+    @OneToOne
+    @JoinColumn(name = "address_id", nullable = false, unique = true)
+    private JpaAddress address;
 
-    @OneToOne(mappedBy = "student", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id")
-    private Set<JpaAddress> address;
+    @OneToOne(orphanRemoval = true)
+    @JoinColumn(name = "reservation_id", unique = true)
+    private JpaReservation reservation;
+
+    @Override
+    public Address getAddress() {
+        return address;
+    }
+
+    @Override
+    public void setAddress(Address address) {
+        if (address instanceof JpaAddress) {
+            this.address = (JpaAddress) address;
+        }
+    }
+
+    @Override
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    @Override
+    public void setReservation(Reservation reservation) {
+        if (reservation instanceof JpaReservation) {
+            this.reservation = (JpaReservation) reservation;
+        }
+    }
 }

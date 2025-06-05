@@ -16,11 +16,11 @@ class SingleConnectionIT {
     @BeforeAll
     static void setup() {
         dataSource = new SingleConnectionDataSource(
-                "org.h2.Driver",
-                "localhost",
-                "testdb",
-                "sa",
-                ""
+                "mysql",
+                "localhost:3306",
+                "RUVIC",
+                "root",
+                "rootpassword"
         );
     }
 

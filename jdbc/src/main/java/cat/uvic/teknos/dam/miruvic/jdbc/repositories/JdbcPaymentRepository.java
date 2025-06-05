@@ -31,7 +31,7 @@ public class JdbcPaymentRepository implements PaymentRepository {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            Reservation reservation = payment.getReservation().stream().findFirst().orElse(null);
+            Reservation reservation = payment.getReservation();
             if (reservation == null) {
                 throw new RepositoryException("El pago debe estar asociado a una reserva");
             }
@@ -73,7 +73,7 @@ public class JdbcPaymentRepository implements PaymentRepository {
 
     @Override
     public Payment get(Integer id) {
-        Payment payment = new PaymentImpl();
+        Payment payment = null;
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM PAYMENT WHERE id = ?")) {
             stmt.setInt(1, id);
@@ -154,9 +154,9 @@ public class JdbcPaymentRepository implements PaymentRepository {
             payment.setId(rs.getInt("id"));
 
             Reservation reservation = new ReservationImpl();
-            reservation.setId(rs.getInt("id_reservation"));
+            reservation.setId(rs.getInt("reservation_id"));
 
-            payment.setReservation(Set.of(reservation));
+            payment.setReservation(reservation);
             payment.setAmount(rs.getBigDecimal("amount"));
             payment.setPaymentDate(rs.getDate("payment_date").toLocalDate());
             payment.setPaymentMethod(rs.getString("payment_method"));

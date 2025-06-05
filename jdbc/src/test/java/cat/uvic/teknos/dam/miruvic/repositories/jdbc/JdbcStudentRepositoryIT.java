@@ -11,8 +11,6 @@ import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.util.List;
-import java.util.Set;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +82,7 @@ class JdbcStudentRepositoryIT {
         student.setPasswordHash("testPassword");
         student.setPhoneNumber("123456789");
         if (address != null) {
-            student.setAddress(Set.of(address));
+            student.setAddress(address);
         }
         return student;
     }
@@ -101,8 +99,7 @@ class JdbcStudentRepositoryIT {
         assertNotNull(saved);
         assertEquals("John", saved.getFirstName());
         assertNotNull(saved.getAddress());
-        assertFalse(saved.getAddress().isEmpty());
-        assertEquals(address.getId(), saved.getAddress().iterator().next().getId());
+        assertEquals(address.getId(), saved.getAddress().getId());
     }
 
     @Test
@@ -150,7 +147,7 @@ class JdbcStudentRepositoryIT {
         Address address2 = createAndSaveTestAddress("6 Birch St", "AllCity2");
         studentRepository.save(createTestStudent("StudentB", "student.b@example.com", address2));
 
-        Set<Student> students = studentRepository.getAll();
+        var students = studentRepository.getAll();
 
         assertEquals(2, students.size());
     }

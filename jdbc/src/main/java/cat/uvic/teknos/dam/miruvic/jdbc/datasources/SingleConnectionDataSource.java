@@ -1,8 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.jdbc.datasources;
 
 import java.sql.*;
-import java.util.*;
-import java.io.*;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.DataSourceException;
 
 public class SingleConnectionDataSource implements DataSource {
@@ -21,22 +19,6 @@ public class SingleConnectionDataSource implements DataSource {
         this.password = password;
     }
 
-    public SingleConnectionDataSource() {
-        var properties = new Properties();
-
-        try {
-            properties.load(this.getClass().getResourceAsStream("/datasource.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        driver = properties.getProperty("driver");
-        server = properties.getProperty("server");
-        database = properties.getProperty("database");
-        user = properties.getProperty("user");
-        password = properties.getProperty("password");
-    }
-
     @Override
     public Connection getConnection() {
         if (connection == null) {
@@ -52,23 +34,10 @@ public class SingleConnectionDataSource implements DataSource {
         return connection;
     }
 
-    public String getDriver() {
-        return driver;
-    }
-
-    public String getServer() {
-        return server;
-    }
-
-    public String getDatabase() {
-        return database;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public String getPassword() {
-        return password;
+    @Override
+    public void close() throws SQLException {
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
+        }
     }
 }

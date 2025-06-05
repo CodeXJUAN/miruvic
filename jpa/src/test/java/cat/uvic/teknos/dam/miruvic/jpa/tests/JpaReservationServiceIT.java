@@ -23,14 +23,8 @@ public class JpaReservationServiceIT {
     private static JpaReservationServiceRepository reservationServiceRepository;
     private static JpaReservationRepository reservationRepository;
     private static JpaServiceRepository serviceRepository;
-    private static JpaStudentRepository studentRepository;
-    private static JpaRoomRepository roomRepository;
-    private static JpaAddressRepository addressRepository;
     private static Integer savedReservationId;
     private static Integer savedServiceId;
-    private static Integer savedStudentId;
-    private static Integer savedRoomId;
-    private static Integer savedAddressId;
     private static ReservationServiceId savedReservationServiceId;
 
     @BeforeAll
@@ -40,13 +34,51 @@ public class JpaReservationServiceIT {
         reservationServiceRepository = new JpaReservationServiceRepository(entityManagerFactory);
         reservationRepository = new JpaReservationRepository(entityManagerFactory);
         serviceRepository = new JpaServiceRepository(entityManagerFactory);
-        studentRepository = new JpaStudentRepository(entityManagerFactory);
-        roomRepository = new JpaRoomRepository(entityManagerFactory);
-        addressRepository = new JpaAddressRepository(entityManagerFactory);
     }
 
     @AfterAll
     public static void tearDown() {
+        if (entityManager != null && entityManager.isOpen()) {
+            entityManager.getTransaction().begin();
+            // Elimina ReservationService
+            if (savedReservationServiceId != null) {
+                JpaReservationService rs = entityManager.find(JpaReservationService.class, savedReservationServiceId);
+                if (rs != null) {
+                    entityManager.remove(rs);
+                }
+            }
+            // Elimina Reservation
+            if (savedReservationId != null) {
+                JpaReservation reservation = entityManager.find(JpaReservation.class, savedReservationId);
+                if (reservation != null) {
+                    entityManager.remove(reservation);
+                }
+            }
+            // Elimina Service
+            if (savedServiceId != null) {
+                JpaService service = entityManager.find(JpaService.class, savedServiceId);
+                if (service != null) {
+                    entityManager.remove(service);
+                }
+            }
+            // Elimina Address, Room y Student asociados a la reserva
+            JpaReservation reservation = entityManager.find(JpaReservation.class, savedReservationId);
+            if (reservation != null) {
+                JpaStudent student = (JpaStudent) reservation.getStudent();
+                if (student != null) {
+                    entityManager.remove(entityManager.contains(student) ? student : entityManager.merge(student));
+                }
+                JpaRoom room = (JpaRoom) reservation.getRoom();
+                if (room != null) {
+                    entityManager.remove(entityManager.contains(room) ? room : entityManager.merge(room));
+                }
+                JpaAddress address = student != null ? (JpaAddress) student.getAddress() : null;
+                if (address != null) {
+                    entityManager.remove(entityManager.contains(address) ? address : entityManager.merge(address));
+                }
+            }
+            entityManager.getTransaction().commit();
+        }
         if (entityManager != null) {
             entityManager.close();
         }
@@ -97,8 +129,6 @@ public class JpaReservationServiceIT {
         reservation.setRoom(room);
         entityManager.persist(reservation);
 
-        // Asignar la reserva al estudiante y mergear
-        student.setReservation(reservation);
         entityManager.merge(student);
 
         // Crear y persistir el servicio
@@ -110,15 +140,9 @@ public class JpaReservationServiceIT {
 
         entityManager.getTransaction().commit();
 
-        savedAddressId = address.getId();
-        savedRoomId = room.getId();
-        savedStudentId = student.getId();
         savedReservationId = reservation.getId();
         savedServiceId = service.getId();
 
-        assertNotNull(savedAddressId, "El ID de la dirección no debería ser nulo");
-        assertNotNull(savedRoomId, "El ID de la habitación no debería ser nulo");
-        assertNotNull(savedStudentId, "El ID del estudiante no debería ser nulo");
         assertNotNull(savedReservationId, "El ID de la reserva no debería ser nulo");
         assertNotNull(savedServiceId, "El ID del servicio no debería ser nulo");
     }

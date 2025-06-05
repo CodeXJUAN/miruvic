@@ -85,8 +85,6 @@ public class JpaAddressIT {
         reservation.setStudent(student);
         entityManager.persist(reservation);
 
-        // 5. Asignar la reserva al estudiante y mergear (si la relación es bidireccional)
-        student.setReservation(reservation);
         entityManager.merge(student);
 
         entityManager.getTransaction().commit();
@@ -164,14 +162,6 @@ public class JpaAddressIT {
                         "SELECT s FROM JpaStudent s WHERE s.address.id = :addressId", JpaStudent.class)
                 .setParameter("addressId", savedAddressId)
                 .getResultList();
-
-        for (JpaStudent student : students) {
-            JpaReservation reservation = (JpaReservation) student.getReservation();
-            if (reservation != null) {
-                entityManager.remove(reservation); // Elimina primero la reserva
-            }
-            entityManager.remove(student); // Luego el estudiante
-        }
 
         entityManager.getTransaction().commit();
 

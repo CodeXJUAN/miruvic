@@ -8,14 +8,16 @@ plugins {
 
 dependencies {
     implementation(project(":jdbc"))
+    implementation(project(":jpa"))
     implementation(project(":model"))
     implementation(project(":repositories"))
 
-    implementation("com.mysql:mysql-connector-j:9.3.0")
     implementation("com.github.freva:ascii-table:1.8.0")
-
+    implementation("com.mysql:mysql-connector-j:9.3.0")
+    implementation("org.slf4j:slf4j-simple:1.7.36")
 }
 
 application {
-    mainClass = "cat.uvic.teknos.dam.ruvic"
+    // Define the main class for the application.
+    mainClass = "cat.uvic.teknos.miruvic.ui.App"
 }

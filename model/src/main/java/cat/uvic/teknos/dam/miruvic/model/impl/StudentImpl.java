@@ -1,7 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.model.impl;
 
 import cat.uvic.teknos.dam.miruvic.model.Address;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 
 public class StudentImpl implements Student {
@@ -12,7 +11,6 @@ public class StudentImpl implements Student {
     private String passwordHash;
     private String phoneNumber;
     private Address address;
-    private Reservation reservation;
 
     @Override
     public Integer getId() { return id; }
@@ -55,10 +53,4 @@ public class StudentImpl implements Student {
 
     @Override
     public void setAddress(Address address) { this.address = address; }
-
-    @Override
-    public Reservation getReservation() { return reservation; }
-
-    @Override
-    public void setReservation(Reservation reservation) { this.reservation = reservation; }
 }

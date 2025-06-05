@@ -84,11 +84,11 @@ public class JdbcReservationRepository implements ReservationRepository {
         String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
                 "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
                 "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
-                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "rm.id as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
                 "FROM RESERVATION r " +
                 "JOIN STUDENT s ON r.student_id = s.id " +
                 "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
-                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "JOIN ROOM rm ON r.room_id = rm.id " +
                 "WHERE r.id = ?";
 
         try (Connection conn = dataSource.getConnection();
@@ -112,11 +112,11 @@ public class JdbcReservationRepository implements ReservationRepository {
         String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
                 "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
                 "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
-                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "rm.id as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
                 "FROM RESERVATION r " +
                 "JOIN STUDENT s ON r.student_id = s.id " +
                 "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
-                "JOIN ROOM rm ON r.room_id = rm.id_room";
+                "JOIN ROOM rm ON r.room_id = rm.id";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -137,11 +137,11 @@ public class JdbcReservationRepository implements ReservationRepository {
         String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
                 "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
                 "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
-                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "rm.id as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
                 "FROM RESERVATION r " +
                 "JOIN STUDENT s ON r.student_id = s.id " +
                 "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
-                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "JOIN ROOM rm ON r.room_id = rm.id " +
                 "WHERE r.start_date <= ? AND r.end_date >= ?";
 
         try (Connection conn = dataSource.getConnection();
@@ -167,11 +167,11 @@ public class JdbcReservationRepository implements ReservationRepository {
         String sql = "SELECT r.*, s.id as student_id, s.first_name as student_name, s.last_name as student_surname, " +
                 "s.email as student_email, s.phone_number as student_phone, s.address_id as student_address_id, " +
                 "a.id as address_id, a.street, a.city, a.state, a.zip_code, a.country, " +
-                "rm.id_room as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
+                "rm.id as room_id, rm.room_number, rm.floor, rm.capacity, rm.room_type, rm.price as room_price " +
                 "FROM RESERVATION r " +
                 "JOIN STUDENT s ON r.student_id = s.id " +
                 "LEFT JOIN ADDRESS a ON s.address_id = a.id " +
-                "JOIN ROOM rm ON r.room_id = rm.id_room " +
+                "JOIN ROOM rm ON r.room_id = rm.id " +
                 "WHERE r.student_id = ?";
 
         try (Connection conn = dataSource.getConnection();
@@ -220,7 +220,7 @@ public class JdbcReservationRepository implements ReservationRepository {
         reservation.setStudent(student);
 
         RoomImpl room = new RoomImpl();
-        room.setId(rs.getInt("room_id"));
+        room.setId(rs.getInt("id"));
         room.setRoomNumber(rs.getString("room_number"));
         room.setFloor(rs.getInt("floor"));
         room.setCapacity(rs.getInt("capacity"));

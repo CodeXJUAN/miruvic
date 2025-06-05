@@ -2,14 +2,17 @@ package cat.uvic.teknos.dam.miruvic.jdbc.repositories;
 
 import cat.uvic.teknos.dam.miruvic.repositories.*;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
-import cat.uvic.teknos.dam.miruvic.jdbc.datasources.SingleConnectionDataSource;
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.HikariDataSourceWrapper;
 
-public class JdbcRepositoryFactory implements RepositoryFactory{
+
+import java.sql.SQLException;
+
+public class JdbcRepositoryFactory implements RepositoryFactory, AutoCloseable {
 
     private final DataSource dataSource;
 
     public JdbcRepositoryFactory() {
-        this.dataSource = new SingleConnectionDataSource();
+        this.dataSource = new HikariDataSourceWrapper();
     }
     
     @Override
@@ -45,5 +48,12 @@ public class JdbcRepositoryFactory implements RepositoryFactory{
     @Override
     public ReservationServiceRepository getReservationServiceRepository() {
         return new JdbcReservationServiceRepository(dataSource);
+    }
+
+    @Override
+    public void close() throws SQLException {
+        if (dataSource != null) {
+            dataSource.close();
+        }
     }
 }

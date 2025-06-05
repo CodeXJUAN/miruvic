@@ -28,7 +28,7 @@ public class JpaRoom implements Room {
     @Column(name = "capacity", nullable = false)
     private Integer capacity;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "room_type", nullable = false)
     private String type;
 
     @Column(name = "price", nullable = false)

@@ -75,19 +75,13 @@ public class JdbcStudent implements Student {
     }
 
     @Override
-    public Address getAddress() { return address_id; }
-
-
-    @Override
-    public void setAddress(Address address) { this.address_id = address; }
-
-    @Override
-    public Reservation getReservation() {
-        return reservations;
+    public Address getAddress() {
+        return address_id;
     }
 
+
     @Override
-    public void setReservation(Reservation reservations) {
-        this.reservations = reservations;
+    public void setAddress(Address address) {
+        this.address_id = address;
     }
 }

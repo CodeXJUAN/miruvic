@@ -4,9 +4,7 @@ import java.sql.*;
 import java.util.*;
 
 import cat.uvic.teknos.dam.miruvic.model.Address;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Student;
-import cat.uvic.teknos.dam.miruvic.model.impl.ReservationImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.StudentImpl;
 import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.StudentRepository;
@@ -26,9 +24,9 @@ public class JdbcStudentRepository implements StudentRepository {
         String sql;
         boolean isInsert = student.getId() == null || student.getId() == 0;
         if (isInsert) {
-            sql = "INSERT INTO STUDENT (first_name, last_name, email, password_hash, phone_number, address_id, reservation_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO STUDENT (first_name, last_name, email, password_hash, phone_number, address_id) VALUES (?, ?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE STUDENT SET first_name = ?, last_name = ?, email = ?, password_hash = ?, phone_number = ?, address_id = ?, reservation_id = ? WHERE id = ?";
+            sql = "UPDATE STUDENT SET first_name = ?, last_name = ?, email = ?, password_hash = ?, phone_number = ?, address_id = ? = ? WHERE id = ?";
         }
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -46,15 +44,8 @@ public class JdbcStudentRepository implements StudentRepository {
                 stmt.setNull(6, Types.INTEGER);
             }
 
-            Reservation reservation = student.getReservation();
-            if (reservation != null) {
-                stmt.setInt(7, reservation.getId());
-            } else {
-                stmt.setNull(7, Types.INTEGER);
-            }
-
             if (!isInsert) {
-                stmt.setInt(8, student.getId());
+                stmt.setInt(7, student.getId());
             }
 
             stmt.executeUpdate();
@@ -98,14 +89,6 @@ public class JdbcStudentRepository implements StudentRepository {
                 address.setId(addressId);
                 student.setAddress(address);
             }
-
-            int reservationId = rs.getInt("reservation_id");
-            if (!rs.wasNull() && reservationId != 0) {
-                Reservation reservation = new ReservationImpl();
-                reservation.setId(reservationId);
-                student.setReservation(reservation);
-            }
-
         } catch (SQLException e) {
             throw new RepositoryException("Error mapping Student", e);
         }

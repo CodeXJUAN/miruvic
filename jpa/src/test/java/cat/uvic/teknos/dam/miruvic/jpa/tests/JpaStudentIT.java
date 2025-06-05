@@ -4,7 +4,6 @@ import cat.uvic.teknos.dam.miruvic.jpa.model.JpaAddress;
 import cat.uvic.teknos.dam.miruvic.jpa.model.JpaStudent;
 import cat.uvic.teknos.dam.miruvic.jpa.repository.JpaAddressRepository;
 import cat.uvic.teknos.dam.miruvic.jpa.repository.JpaStudentRepository;
-import cat.uvic.teknos.dam.miruvic.model.Address;
 import cat.uvic.teknos.dam.miruvic.model.Student;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -35,7 +34,25 @@ public class JpaStudentIT {
     }
 
     @AfterAll
-    public static void tearDown() {
+    public static void cleanup() {
+        if (entityManager != null && entityManager.isOpen()) {
+            entityManager.getTransaction().begin();
+            // Elimina el estudiante
+            if (savedStudentId != null) {
+                JpaStudent student = entityManager.find(JpaStudent.class, savedStudentId);
+                if (student != null) {
+                    entityManager.remove(student);
+                }
+            }
+            // Elimina la dirección
+            if (savedAddressId != null) {
+                JpaAddress address = entityManager.find(JpaAddress.class, savedAddressId);
+                if (address != null) {
+                    entityManager.remove(address);
+                }
+            }
+            entityManager.getTransaction().commit();
+        }
         if (entityManager != null) {
             entityManager.close();
         }

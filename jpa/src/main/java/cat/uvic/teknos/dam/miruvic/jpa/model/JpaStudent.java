@@ -1,7 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.jpa.model;
 
 import cat.uvic.teknos.dam.miruvic.model.Student;
-import cat.uvic.teknos.dam.miruvic.model.Reservation;
 import cat.uvic.teknos.dam.miruvic.model.Address;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -35,9 +34,6 @@ public class JpaStudent implements Student {
     @JoinColumn(name = "address_id", nullable = false, unique = true)
     private JpaAddress address;
 
-    @OneToOne(orphanRemoval = true)
-    @JoinColumn(name = "reservation_id", unique = true)
-    private JpaReservation reservation;
 
     @Override
     public Address getAddress() {
@@ -48,18 +44,6 @@ public class JpaStudent implements Student {
     public void setAddress(Address address) {
         if (address instanceof JpaAddress) {
             this.address = (JpaAddress) address;
-        }
-    }
-
-    @Override
-    public Reservation getReservation() {
-        return reservation;
-    }
-
-    @Override
-    public void setReservation(Reservation reservation) {
-        if (reservation instanceof JpaReservation) {
-            this.reservation = (JpaReservation) reservation;
         }
     }
 }

@@ -25,6 +25,7 @@ public class JdbcAddressRepository implements AddressRepository {
             sql = "UPDATE ADDRESS SET street = ?, city = ?, state = ?, zip_code = ?, country = ? WHERE id = ?";
         }
 
+        // Cada operación abre y cierra su propia conexión
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, value.getStreet());

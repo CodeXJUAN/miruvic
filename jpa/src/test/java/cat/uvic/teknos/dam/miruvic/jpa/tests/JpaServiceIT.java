@@ -36,16 +36,13 @@ public class JpaServiceIT {
     @Test
     @Order(1)
     public void testSaveService() {
-        // Crear un nuevo servicio
         JpaService service = new JpaService();
         service.setServiceName("Limpieza");
         service.setDescription("Servicio de limpieza diaria");
         service.setPrice(new BigDecimal("25.00"));
 
-        // Guardar el servicio
         serviceRepository.save(service);
 
-        // Verificar que se ha asignado un ID
         assertNotNull(service.getId(), "El ID del servicio no debería ser nulo después de guardar");
         savedServiceId = service.getId();
     }
@@ -53,10 +50,8 @@ public class JpaServiceIT {
     @Test
     @Order(2)
     public void testGetService() {
-        // Obtener el servicio guardado
         Service service = serviceRepository.get(savedServiceId);
 
-        // Verificar que el servicio existe y tiene los datos correctos
         assertNotNull(service, "El servicio no debería ser nulo");
         assertEquals("Limpieza", service.getServiceName(), "El nombre del servicio no coincide");
         assertEquals("Servicio de limpieza diaria", service.getDescription(), "La descripción no coincide");
@@ -66,17 +61,14 @@ public class JpaServiceIT {
     @Test
     @Order(3)
     public void testUpdateService() {
-        // Obtener el servicio guardado
         Service service = serviceRepository.get(savedServiceId);
         assertNotNull(service, "El servicio no debería ser nulo");
 
-        // Modificar el servicio
         service.setServiceName("Limpieza Premium");
         service.setDescription("Servicio de limpieza premium diaria");
         service.setPrice(new BigDecimal("35.00"));
         serviceRepository.save(service);
 
-        // Obtener el servicio actualizado
         Service updatedService = serviceRepository.get(savedServiceId);
         assertNotNull(updatedService, "El servicio actualizado no debería ser nulo");
         assertEquals("Limpieza Premium", updatedService.getServiceName(), "El nombre del servicio no se actualizó correctamente");
@@ -87,10 +79,8 @@ public class JpaServiceIT {
     @Test
     @Order(4)
     public void testGetAll() {
-        // Obtener todos los servicios
         Set<Service> services = serviceRepository.getAll();
 
-        // Verificar que la lista no es nula y contiene al menos un servicio
         assertNotNull(services, "La lista de servicios no debería ser nula");
         assertFalse(services.isEmpty(), "La lista de servicios no debería estar vacía");
     }
@@ -98,10 +88,8 @@ public class JpaServiceIT {
     @Test
     @Order(5)
     public void testFindByName() {
-        // Buscar servicios por nombre
         List<Service> services = serviceRepository.findByName("Limpieza Premium");
 
-        // Verificar que la lista no es nula y contiene al menos un servicio
         assertNotNull(services, "La lista de servicios no debería ser nula");
         assertFalse(services.isEmpty(), "La lista de servicios no debería estar vacía");
         assertEquals("Limpieza Premium", services.get(0).getServiceName(), "El nombre del servicio no coincide");
@@ -110,10 +98,8 @@ public class JpaServiceIT {
     @Test
     @Order(6)
     public void testFindByType() {
-        // Buscar servicios por tipo (usando descripción)
         List<Service> services = serviceRepository.findByType("premium");
 
-        // Verificar que la lista no es nula y contiene al menos un servicio
         assertNotNull(services, "La lista de servicios no debería ser nula");
         assertFalse(services.isEmpty(), "La lista de servicios no debería estar vacía");
         assertTrue(services.get(0).getDescription().toLowerCase().contains("premium"),

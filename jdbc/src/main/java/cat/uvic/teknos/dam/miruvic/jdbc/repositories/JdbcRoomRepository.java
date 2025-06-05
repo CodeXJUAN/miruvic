@@ -24,7 +24,7 @@ public class JdbcRoomRepository implements RoomRepository {
         if (isInsert) {
             sql = "INSERT INTO ROOM (room_number, floor, capacity, room_type, price) VALUES (?, ?, ?, ?, ?)";
         } else {
-            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id_room = ?";
+            sql = "UPDATE ROOM SET room_number = ?, floor = ?, capacity = ?, room_type = ?, price = ? WHERE id = ?";
         }
 
         try (Connection conn = dataSource.getConnection();
@@ -56,7 +56,7 @@ public class JdbcRoomRepository implements RoomRepository {
 
     @Override
     public void delete(Room room) {
-        String checkSql = "SELECT COUNT(*) FROM RESERVATION WHERE room_id = ?";
+        String checkSql = "SELECT COUNT(*) FROM RESERVATION WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
@@ -68,7 +68,7 @@ public class JdbcRoomRepository implements RoomRepository {
                 }
             }
 
-            String deleteSql = "DELETE FROM ROOM WHERE id_room = ?";
+            String deleteSql = "DELETE FROM ROOM WHERE id = ?";
             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteSql)) {
                 deleteStmt.setInt(1, room.getId());
                 deleteStmt.executeUpdate();
@@ -80,7 +80,7 @@ public class JdbcRoomRepository implements RoomRepository {
 
     @Override
     public Room get(Integer id) {
-        String sql = "SELECT * FROM ROOM WHERE id_room = ?";
+        String sql = "SELECT * FROM ROOM WHERE id = ?";
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -157,7 +157,7 @@ public class JdbcRoomRepository implements RoomRepository {
     private Room mapResultSetToRoom(ResultSet rs) throws SQLException {
         Room room = new RoomImpl();
         try {
-            room.setId(rs.getInt("id_room"));
+            room.setId(rs.getInt("id"));
             room.setRoomNumber(rs.getString("room_number"));
             room.setFloor(rs.getInt("floor"));
             room.setCapacity(rs.getInt("capacity"));

@@ -8,7 +8,6 @@ public interface Student {
     String getPasswordHash();
     String getPhoneNumber();
     Address getAddress();
-    Reservation getReservation();
 
     void setId(Integer id);
     void setFirstName(String firstName);
@@ -17,5 +16,4 @@ public interface Student {
     void setPasswordHash(String passwordHash);
     void setPhoneNumber(String phoneNumber);
     void setAddress(Address address);
-    void setReservation(Reservation reservation);
 }

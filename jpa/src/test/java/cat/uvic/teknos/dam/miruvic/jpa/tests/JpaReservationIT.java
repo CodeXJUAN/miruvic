@@ -21,9 +21,6 @@ public class JpaReservationIT {
     private static EntityManager entityManager;
     private static EntityManagerFactory entityManagerFactory;
     private static JpaReservationRepository reservationRepository;
-    private static JpaStudentRepository studentRepository;
-    private static JpaRoomRepository roomRepository;
-    private static JpaAddressRepository addressRepository;
     private static Integer savedReservationId;
     private static Integer savedStudentId;
     private static Integer savedRoomId;
@@ -34,13 +31,42 @@ public class JpaReservationIT {
         entityManagerFactory = Persistence.createEntityManagerFactory("miruvic_test");
         entityManager = entityManagerFactory.createEntityManager();
         reservationRepository = new JpaReservationRepository(entityManagerFactory);
-        studentRepository = new JpaStudentRepository(entityManagerFactory);
-        roomRepository = new JpaRoomRepository(entityManagerFactory);
-        addressRepository = new JpaAddressRepository(entityManagerFactory);
     }
 
     @AfterAll
-    public static void tearDown() {
+    public static void cleanup() {
+        if (entityManager != null && entityManager.isOpen()) {
+            entityManager.getTransaction().begin();
+            // Elimina la reserva primero
+            if (savedReservationId != null) {
+                JpaReservation reservation = entityManager.find(JpaReservation.class, savedReservationId);
+                if (reservation != null) {
+                    entityManager.remove(reservation);
+                }
+            }
+            // Elimina el estudiante
+            if (savedStudentId != null) {
+                JpaStudent student = entityManager.find(JpaStudent.class, savedStudentId);
+                if (student != null) {
+                    entityManager.remove(student);
+                }
+            }
+            // Elimina la habitación
+            if (savedRoomId != null) {
+                JpaRoom room = entityManager.find(JpaRoom.class, savedRoomId);
+                if (room != null) {
+                    entityManager.remove(room);
+                }
+            }
+            // Elimina la dirección
+            if (savedAddressId != null) {
+                JpaAddress address = entityManager.find(JpaAddress.class, savedAddressId);
+                if (address != null) {
+                    entityManager.remove(address);
+                }
+            }
+            entityManager.getTransaction().commit();
+        }
         if (entityManager != null) {
             entityManager.close();
         }
@@ -51,10 +77,10 @@ public class JpaReservationIT {
 
     @Test
     @Order(1)
-    public void testSetupPrerequisites() {
+    public void testSaveReservation() {
         entityManager.getTransaction().begin();
 
-        // Crear y persistir la dirección
+        // 1. Crear y persistir la dirección
         JpaAddress address = new JpaAddress();
         address.setStreet("Calle Reserva");
         address.setCity("Madrid");
@@ -63,7 +89,7 @@ public class JpaReservationIT {
         address.setCountry("España");
         entityManager.persist(address);
 
-        // Crear y persistir la habitación
+        // 2. Crear y persistir la habitación
         JpaRoom room = new JpaRoom();
         room.setRoomNumber("301");
         room.setFloor(3);
@@ -72,7 +98,7 @@ public class JpaReservationIT {
         room.setPrice(new BigDecimal("60.00"));
         entityManager.persist(room);
 
-        // Crear y persistir el estudiante
+        // 3. Crear y persistir el estudiante
         JpaStudent student = new JpaStudent();
         student.setFirstName("María");
         student.setLastName("López");
@@ -82,7 +108,7 @@ public class JpaReservationIT {
         student.setAddress(address);
         entityManager.persist(student);
 
-        // Crear y persistir la reserva
+        // 4. Crear y persistir la reserva
         JpaReservation reservation = new JpaReservation();
         reservation.setStartDate(LocalDate.now());
         reservation.setEndDate(LocalDate.now().plusDays(3));
@@ -91,8 +117,6 @@ public class JpaReservationIT {
         reservation.setRoom(room);
         entityManager.persist(reservation);
 
-        // Asignar la reserva al estudiante y mergear
-        student.setReservation(reservation);
         entityManager.merge(student);
 
         entityManager.getTransaction().commit();

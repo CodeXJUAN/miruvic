@@ -15,7 +15,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
 
     implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("mysql:mysql-connector-java:8.0.33")
     testImplementation("com.h2database:h2:2.3.232")
 }
 

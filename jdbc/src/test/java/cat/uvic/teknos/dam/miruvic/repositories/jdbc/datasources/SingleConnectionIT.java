@@ -18,9 +18,9 @@ class SingleConnectionIT {
         dataSource = new SingleConnectionDataSource(
                 "mysql",
                 "localhost:3306",
-                "RUVIC",
-                "root",
-                "rootpassword"
+                "miruvic_test",
+                "juanm",
+                "teknos"
         );
     }
 

@@ -5,7 +5,7 @@ import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.jdbc.datasources.DataSource;
 import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcAddressRepository;
 import org.junit.jupiter.api.*;
-
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.SingleConnectionDataSource;
 import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +16,10 @@ class JdbcAddressRepositoryIT {
 
     @BeforeAll
     static void setup() {
+        dataSource = new SingleConnectionDataSource(
+                "mysql", "localhost:3306", "miruvic_test", "juanm", "teknos"
+        );
+
         repository = new JdbcAddressRepository(dataSource);
 
         // Initialize test database

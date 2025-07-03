@@ -9,7 +9,7 @@ import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcAddressRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcStudentRepository;
 import cat.uvic.teknos.dam.miruvic.jdbc.exceptions.EntityNotFoundException;
 import org.junit.jupiter.api.*;
-
+import cat.uvic.teknos.dam.miruvic.jdbc.datasources.SingleConnectionDataSource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,6 +21,11 @@ class JdbcStudentRepositoryIT {
 
     @BeforeAll
     static void setup() {
+
+        dataSource = new SingleConnectionDataSource(
+                "mysql", "localhost:3306", "miruvic_test", "juanm", "teknos"
+        );
+
         studentRepository = new JdbcStudentRepository(dataSource);
         addressRepository = new JdbcAddressRepository(dataSource);
 

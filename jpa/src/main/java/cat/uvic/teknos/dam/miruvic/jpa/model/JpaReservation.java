@@ -35,6 +35,7 @@ public class JpaReservation implements Reservation {
     private LocalDate endDate;
 
     @Column(name = "status", nullable = false)
+
     private String status;
 
     @Override

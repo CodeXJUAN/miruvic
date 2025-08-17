@@ -74,7 +74,7 @@ Estas pruebas crean y limpian las tablas necesarias automáticamente y validan l
 
 ## Licencia
 
-Este proyecto está licenciado bajo la Licencia Apache 2.0.
+Este proyecto está licenciado bajo la Licencia del MIT.
 
 ---
 

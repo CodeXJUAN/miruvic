@@ -64,8 +64,8 @@ CREATE TABLE `PAYMENT` (
 
 CREATE TABLE `RESERVATION` (
   `id` int NOT NULL,
-  `student_id` int UNIQUE, -- Relación uno a uno con STUDENT
-  `room_id` int UNIQUE,    -- Relación uno a uno con ROOM
+  `student_id` int NOT NULL,
+  `room_id` int NOT NULL,
   `start_date` date NOT NULL,
   `end_date` date NOT NULL,
   `status` varchar(50) NOT NULL
@@ -94,9 +94,8 @@ CREATE TABLE `ROOM` (
   `room_number` varchar(10) NOT NULL,
   `floor` int NOT NULL,
   `capacity` int NOT NULL,
-  `type` varchar(50) NOT NULL,
-  `price` decimal(6,2) NOT NULL,
-  `reservation_id` int UNIQUE -- Relación uno a uno con RESERVATION
+  `room_type` varchar(50) NOT NULL,
+  `price` decimal(6,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -125,8 +124,7 @@ CREATE TABLE `STUDENT` (
   `email` varchar(150) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `phone_number` varchar(20) DEFAULT NULL,
-  `address_id` int UNIQUE, -- Relación uno a uno con ADDRESS
-  `reservation_id` int UNIQUE -- Relación uno a uno con RESERVATION
+  `address_id` int UNIQUE -- Relación uno a uno con ADDRESS
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -151,8 +149,8 @@ ALTER TABLE `PAYMENT`
 --
 ALTER TABLE `RESERVATION`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `RESERVATION_student_id_UNIQUE` (`student_id`),
-  ADD UNIQUE KEY `RESERVATION_room_id_UNIQUE` (`room_id`);
+  ADD KEY `RESERVATION_student_id_FK` (`student_id`),
+  ADD KEY `RESERVATION_room_id_FK` (`room_id`);
 
 --
 -- Indices de la tabla `RESERVATION_SERVICE`
@@ -166,8 +164,7 @@ ALTER TABLE `RESERVATION_SERVICE`
 --
 ALTER TABLE `ROOM`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `ROOM_UK` (`room_number`),
-  ADD UNIQUE KEY `ROOM_reservation_id_UNIQUE` (`reservation_id`);
+  ADD UNIQUE KEY `ROOM_UK` (`room_number`);
 
 --
 -- Indices de la tabla `SERVICE`
@@ -181,8 +178,7 @@ ALTER TABLE `SERVICE`
 ALTER TABLE `STUDENT`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `STUDENT_UK` (`email`),
-  ADD UNIQUE KEY `STUDENT_address_id_UNIQUE` (`address_id`),
-  ADD UNIQUE KEY `STUDENT_reservation_id_UNIQUE` (`reservation_id`);
+  ADD UNIQUE KEY `STUDENT_address_id_UNIQUE` (`address_id`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -228,11 +224,6 @@ ALTER TABLE `STUDENT`
 -- Restricciones para tablas volcadas
 --
 
--- Filtros para la tabla `ADDRESS`
---
-ALTER TABLE `ADDRESS`
-  ADD CONSTRAINT `ADDRESS_ibfk_1` FOREIGN KEY (`id`) REFERENCES `STUDENT` (`address_id`);
-
 --
 -- Filtros para la tabla `PAYMENT`
 --
@@ -254,17 +245,10 @@ ALTER TABLE `RESERVATION_SERVICE`
   ADD CONSTRAINT `RESERVATION_SERVICE_ibfk_2` FOREIGN KEY (`service_id`) REFERENCES `SERVICE` (`id`);
 
 --
--- Filtros para la tabla `ROOM`
---
-ALTER TABLE `ROOM`
-  ADD CONSTRAINT `ROOM_ibfk_1` FOREIGN KEY (`reservation_id`) REFERENCES `RESERVATION` (`id`) ON DELETE SET NULL;
-
---
 -- Filtros para la tabla `STUDENT`
 --
 ALTER TABLE `STUDENT`
-  ADD CONSTRAINT `STUDENT_ibfk_1` FOREIGN KEY (`address_id`) REFERENCES `ADDRESS` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `STUDENT_ibfk_2` FOREIGN KEY (`reservation_id`) REFERENCES `RESERVATION` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `STUDENT_ibfk_1` FOREIGN KEY (`address_id`) REFERENCES `ADDRESS` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

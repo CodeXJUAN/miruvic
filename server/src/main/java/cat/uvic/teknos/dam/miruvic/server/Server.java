@@ -1,61 +1,55 @@
 package cat.uvic.teknos.dam.miruvic.server;
 
-import cat.uvic.teknos.dam.miruvic.jdbc.models.JdbcAddress;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
 import rawhttp.core.RawHttp;
-
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.util.Scanner;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Server {
-    private static RawHttp rawHttp = new RawHttp();
+    private final int port;
+    private final RequestRouter router;
+    private final RawHttp rawHttp = new RawHttp();
+    private static final Logger logger = Logger.getLogger(Server.class.getName());
 
-    public static void main(String[] args) throws IOException {
-        var server = new ServerSocket(5000);
+    public Server(int port, RequestRouter router) {
+        this.port = port;
+        this.router = router;
+    }
 
-        var client = server.accept();
+    public void start() throws IOException {
+        try (var serverSocket = new ServerSocket(port)) {
+            System.out.println("Server started on port " + port);
 
-        var inputStream = new Scanner(new InputStreamReader(client.getInputStream()));
-        var outputStream = new PrintWriter(client.getOutputStream());
-
-        while (true) {
-            var request = rawHttp.parseRequest(client.getInputStream());
-            var method = request.getMethod();
-
-            var pathParts = request.getUri().getPath().split("/");
-            var resource = pathParts[1];
-
-            var id = 0;
-            if (pathParts.length > 2) {
-                id = Integer.parseInt(pathParts[2]);
+            while (true) {
+                try {
+                    var clientSocket = serverSocket.accept();
+                    System.out.println("Client connected from " + clientSocket.getInetAddress());
+                    new Thread(() -> handleClient(clientSocket)).start();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "Error accepting client connection", e);
+                }
             }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not start server", e);
+            throw e;
+        }
+    }
 
-            switch (resource) {
-                case "addresses":
-                    if (method.equals("GET")) {
-                        if (id > 0) {
-                            var address = new JdbcAddress();
-                            address.setId(id);
-                            address.setStreet("Carrer Major");
-                            address.setCity("Vic");
-                            address.setState("Catalunya");
-                            address.setZipCode("08500");
-                            address.setCountry("España");
-
-                            var mapper = new ObjectMapper();
-                            var addressJson = mapper.writeValueAsString(address);
-
-                            rawHttp.parseResponse("HTTP/1.1 200 OK\r\n" +
-                                    "Content-Type: text/json\r\n" +
-                                    "Content-Length: " + addressJson.length() + "\r\n" +
-                                    "\r\n" +
-                                    addressJson).writeTo(client.getOutputStream());
-                        }
-                    }
-                    break;
+    private void handleClient(Socket clientSocket) {
+        try {
+            var request = rawHttp.parseRequest(clientSocket.getInputStream());
+            var response = router.route(request);
+            response.writeTo(clientSocket.getOutputStream());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error handling client", e);
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Error closing client socket", e);
             }
         }
     }

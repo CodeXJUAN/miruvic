@@ -2,55 +2,109 @@ package cat.uvic.teknos.dam.miruvic.server;
 
 import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
 import rawhttp.core.RawHttp;
+import rawhttp.core.RawHttpRequest;
+import rawhttp.core.RawHttpResponse;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
+
     private final int port;
     private final RequestRouter router;
-    private final RawHttp rawHttp = new RawHttp();
-    private static final Logger logger = Logger.getLogger(Server.class.getName());
+    private final RawHttp rawHttp;
+    private final ExecutorService executorService;
+    private volatile boolean running;
 
     public Server(int port, RequestRouter router) {
         this.port = port;
         this.router = router;
+        this.rawHttp = new RawHttp();
+        this.executorService = Executors.newFixedThreadPool(10);
+        this.running = false;
     }
 
-    public void start() throws IOException {
-        try (var serverSocket = new ServerSocket(port)) {
-            System.out.println("Server started on port " + port);
+    public void start() {
+        running = true;
 
-            while (true) {
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║     MIRUVIC SERVER STARTING...        ║");
+        System.out.println("╚════════════════════════════════════════╝");
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("✓ Server listening on port " + port);
+            System.out.println("✓ Waiting for client connections...");
+            System.out.println("✓ Press Ctrl+C to stop the server\n");
+
+            while (running) {
                 try {
-                    var clientSocket = serverSocket.accept();
-                    System.out.println("Client connected from " + clientSocket.getInetAddress());
-                    new Thread(() -> handleClient(clientSocket)).start();
+                    Socket clientSocket = serverSocket.accept();
+
+                    System.out.println("→ New client connected: " +
+                            clientSocket.getInetAddress().getHostAddress() +
+                            ":" + clientSocket.getPort());
+
+                    executorService.submit(() -> handleClient(clientSocket));
+
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Error accepting client connection", e);
+                    if (running) {
+                        System.err.println("✗ Error accepting client connection: " + e.getMessage());
+                    }
                 }
             }
+
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not start server", e);
-            throw e;
+            System.err.println("✗ FATAL: Could not start server on port " + port);
+            System.err.println("  Reason: " + e.getMessage());
+            System.err.println("  Tip: Make sure the port is not already in use");
+        } finally {
+            shutdown();
         }
     }
 
     private void handleClient(Socket clientSocket) {
+        String clientId = clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort();
+
         try {
-            var request = rawHttp.parseRequest(clientSocket.getInputStream());
-            var response = router.route(request);
+            RawHttpRequest request = rawHttp.parseRequest(clientSocket.getInputStream()).eagerly();
+            System.out.println("  ← [" + clientId + "] " + request.getMethod() + " " + request.getUri().getPath());
+            RawHttpResponse<?> response = router.route(request);
             response.writeTo(clientSocket.getOutputStream());
+            System.out.println("  → [" + clientId + "] " + response.getStatusCode() + " " + response.getStartLine().getReason());
+
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error handling client", e);
+            System.err.println("  ✗ [" + clientId + "] Error handling request: " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
+                System.out.println("  ✓ [" + clientId + "] Connection closed\n");
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Error closing client socket", e);
+                System.err.println("  ✗ [" + clientId + "] Error closing socket: " + e.getMessage());
             }
         }
+    }
+
+    public void shutdown() {
+        if (running) {
+            System.out.println("\n╔════════════════════════════════════════╗");
+            System.out.println("║     SHUTTING DOWN SERVER...           ║");
+            System.out.println("╚════════════════════════════════════════╝");
+
+            running = false;
+            executorService.shutdown();
+
+            System.out.println("✓ Server stopped");
+        }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 }

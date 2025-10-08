@@ -8,7 +8,9 @@ plugins {
 
 dependencies {
     implementation(project(":jdbc"))
+    implementation(project(":jpa"))
     implementation(project(":model"))
+    implementation(project(":repositories"))
 
     implementation("com.mysql:mysql-connector-j:9.3.0")
     implementation("com.athaydes.rawhttp:rawhttp-core:2.6.0")
@@ -16,5 +18,5 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
-
+    implementation("org.slf4j:slf4j-simple:1.7.36")
 }

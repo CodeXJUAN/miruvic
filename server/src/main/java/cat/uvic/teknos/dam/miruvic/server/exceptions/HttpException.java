@@ -1,5 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.server.exceptions;
 
+
 public class HttpException extends RuntimeException {
     private final int statusCode;
 

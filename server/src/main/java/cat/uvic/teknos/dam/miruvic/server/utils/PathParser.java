@@ -2,7 +2,7 @@ package cat.uvic.teknos.dam.miruvic.server.utils;
 
 import cat.uvic.teknos.dam.miruvic.server.exceptions.BadRequestException;
 
-public class PathParser {
+public record PathParser() {
 
     public int extractIdFromPath(String path) {
         try {

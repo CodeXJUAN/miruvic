@@ -7,33 +7,25 @@ import cat.uvic.teknos.dam.miruvic.server.exceptions.MethodNotAllowedException;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.NotFoundException;
 import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
 import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 
-public class RequestRouter {
+public record RequestRouter(
+        AddressController addressController,
+        StudentController studentController,
+        HttpResponseBuilder responseBuilder,
+        PathParser pathParser) {
 
-    private final AddressController addressController;
-    private final StudentController studentController;
-    private final HttpResponseBuilder responseBuilder;
-    private final PathParser pathParser;
-
-    public RequestRouter(
-            AddressController addressController,
-            StudentController studentController,
-            HttpResponseBuilder responseBuilder,
-            PathParser pathParser) {
-        this.addressController = addressController;
-        this.studentController = studentController;
-        this.responseBuilder = responseBuilder;
-        this.pathParser = pathParser;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(RequestRouter.class);
 
     public RawHttpResponse<?> route(RawHttpRequest request) {
         try {
             String path = request.getUri().getPath();
             String method = request.getMethod();
 
-            System.out.println("→ Request: " + method + " " + path);
+            logger.info("→ Routing: {} {}", method, path);
 
             // Routing por recurso
             if (path.startsWith("/addresses")) {
@@ -47,9 +39,11 @@ public class RequestRouter {
             throw new NotFoundException("Endpoint not found: " + path);
 
         } catch (HttpException e) {
+            logger.warn("HTTP Exception: {} - {}", e.getStatusCode(), e.getMessage());
             return responseBuilder.error(e.getStatusCode(), e.getMessage());
+
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unexpected error routing request", e);
             return responseBuilder.error(500, "Internal server error: " + e.getMessage());
         }
     }
@@ -81,6 +75,7 @@ public class RequestRouter {
         throw new MethodNotAllowedException("Method " + method + " not allowed for " + path);
     }
 
+
     private RawHttpResponse<?> routeStudents(RawHttpRequest request, String path, String method) {
         boolean isCollection = pathParser.isCollectionPath(path, "students");
         boolean isResource = pathParser.isResourcePath(path, "students");
@@ -106,6 +101,5 @@ public class RequestRouter {
         }
 
         throw new MethodNotAllowedException("Method " + method + " not allowed for " + path);
-
     }
 }

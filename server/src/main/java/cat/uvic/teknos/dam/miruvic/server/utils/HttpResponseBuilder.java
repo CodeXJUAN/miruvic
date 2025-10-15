@@ -5,17 +5,15 @@ import rawhttp.core.RawHttpResponse;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * HttpResponseBuilder - Responsabilidad: Construir respuestas HTTP en formato correcto.
+ */
+public record HttpResponseBuilder() {
 
-public class HttpResponseBuilder {
-
-    private final RawHttp rawHttp;
-
-    public HttpResponseBuilder() {
-        this.rawHttp = new RawHttp();
-    }
+    private static final RawHttp RAW_HTTP = new RawHttp();
 
     public RawHttpResponse<?> ok(String jsonBody) {
-        return rawHttp.parseResponse(
+        return RAW_HTTP.parseResponse(
                 "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/json\r\n" +
                         "Content-Length: " + jsonBody.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
@@ -25,7 +23,7 @@ public class HttpResponseBuilder {
     }
 
     public RawHttpResponse<?> created() {
-        return rawHttp.parseResponse(
+        return RAW_HTTP.parseResponse(
                 "HTTP/1.1 201 Created\r\n" +
                         "Content-Length: 0\r\n" +
                         "\r\n"
@@ -33,7 +31,7 @@ public class HttpResponseBuilder {
     }
 
     public RawHttpResponse<?> created(String location) {
-        return rawHttp.parseResponse(
+        return RAW_HTTP.parseResponse(
                 "HTTP/1.1 201 Created\r\n" +
                         "Location: " + location + "\r\n" +
                         "Content-Length: 0\r\n" +
@@ -42,7 +40,7 @@ public class HttpResponseBuilder {
     }
 
     public RawHttpResponse<?> noContent() {
-        return rawHttp.parseResponse(
+        return RAW_HTTP.parseResponse(
                 "HTTP/1.1 204 No Content\r\n" +
                         "Content-Length: 0\r\n" +
                         "\r\n"
@@ -53,7 +51,7 @@ public class HttpResponseBuilder {
         String statusText = getStatusText(statusCode);
         String body = "{\"error\": \"" + escapeJson(message) + "\"}";
 
-        return rawHttp.parseResponse(
+        return RAW_HTTP.parseResponse(
                 "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
                         "Content-Type: application/json\r\n" +
                         "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
@@ -75,7 +73,6 @@ public class HttpResponseBuilder {
             default -> "Unknown";
         };
     }
-
 
     private String escapeJson(String str) {
         if (str == null) return "";

@@ -1,154 +1,116 @@
 package cat.uvic.teknos.dam.miruvic.server.controllers;
 
 import cat.uvic.teknos.dam.miruvic.model.Address;
-import cat.uvic.teknos.dam.miruvic.model.impl.AddressImpl;
 import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
-import cat.uvic.teknos.dam.miruvic.server.exceptions.HttpException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import rawhttp.core.RawHttp;
+import cat.uvic.teknos.dam.miruvic.server.exceptions.NotFoundException;
+import cat.uvic.teknos.dam.miruvic.server.factories.ModelFactory;
+import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
+import cat.uvic.teknos.dam.miruvic.server.utils.JsonRequestParser;
+import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
+import com.fasterxml.jackson.databind.JsonNode;
 import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 public class AddressController {
 
     private final AddressRepository repository;
-    private final ObjectMapper objectMapper;
-    private final RawHttp rawHttp;
+    private final ModelFactory modelFactory;
+    private final JsonRequestParser jsonParser;
+    private final HttpResponseBuilder responseBuilder;
+    private final PathParser pathParser;
 
-    public AddressController(AddressRepository repository, ObjectMapper objectMapper) {
+    public AddressController(
+            AddressRepository repository,
+            ModelFactory modelFactory,
+            JsonRequestParser jsonParser,
+            HttpResponseBuilder responseBuilder,
+            PathParser pathParser) {
         this.repository = repository;
-        this.objectMapper = objectMapper;
-        this.rawHttp = new RawHttp();
+        this.modelFactory = modelFactory;
+        this.jsonParser = jsonParser;
+        this.responseBuilder = responseBuilder;
+        this.pathParser = pathParser;
     }
 
     public RawHttpResponse<?> get(RawHttpRequest request) {
-        try {
-            int id = extractIdFromPath(request.getUri().getPath());
+        int id = pathParser.extractIdFromPath(request.getUri().getPath());
 
-            Address address = repository.get(id);
+        Address address = repository.get(id);
 
-            if (address == null) {
-                throw new HttpException(404, "Address not found");
-            }
-
-            String json = objectMapper.writeValueAsString(address);
-
-            return rawHttp.parseResponse(
-                    "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: application/json\r\n" +
-                            "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
-                            "\r\n" +
-                            json
-            );
-
-        } catch (IOException e) {
-            throw new HttpException(500, "Error processing request: " + e.getMessage());
+        if (address == null) {
+            throw new NotFoundException("Address with ID " + id + " not found");
         }
+
+        String json = jsonParser.toJson(address);
+        return responseBuilder.ok(json);
     }
 
     public RawHttpResponse<?> getAll(RawHttpRequest request) {
-        try {
-            Set<Address> addresses = repository.getAll();
-
-            String json = objectMapper.writeValueAsString(addresses);
-
-            return rawHttp.parseResponse(
-                    "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: application/json\r\n" +
-                            "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
-                            "\r\n" +
-                            json
-            );
-
-        } catch (IOException e) {
-            throw new HttpException(500, "Error processing request: " + e.getMessage());
-        }
+        Set<Address> addresses = repository.getAll();
+        String json = jsonParser.toJson(addresses);
+        return responseBuilder.ok(json);
     }
 
     public RawHttpResponse<?> post(RawHttpRequest request) {
-        try {
+        JsonNode jsonNode = jsonParser.parseRequestBody(request);
 
-            if (!request.getBody().isPresent()) {
-                throw new HttpException(400, "Request body is required");
-            }
+        Address address = modelFactory.createAddress();
+        populateAddressFromJson(address, jsonNode);
 
-            String json = request.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
+        repository.save(address);
 
-            Address address = objectMapper.readValue(json, AddressImpl.class);
-
-            repository.save(address);
-
-            return rawHttp.parseResponse(
-                    "HTTP/1.1 201 Created\r\n" +
-                            "Content-Length: 0\r\n" +
-                            "\r\n"
-            );
-
-        } catch (IOException e) {
-            throw new HttpException(500, "Error processing request: " + e.getMessage());
-        }
+        return responseBuilder.created();
     }
 
     public RawHttpResponse<?> put(RawHttpRequest request) {
-        try {
-            int id = extractIdFromPath(request.getUri().getPath());
+        int id = pathParser.extractIdFromPath(request.getUri().getPath());
 
-            Address existingAddress = repository.get(id);
-            if (existingAddress == null) {
-                throw new HttpException(404, "Address not found");
-            }
-
-            if (!request.getBody().isPresent()) {
-                throw new HttpException(400, "Request body is required");
-            }
-
-            String json = request.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
-
-            Address updatedAddress = objectMapper.readValue(json, AddressImpl.class);
-
-            updatedAddress.setId(id);
-
-            repository.save(updatedAddress);
-
-            return rawHttp.parseResponse(
-                    "HTTP/1.1 204 No Content\r\n" +
-                            "Content-Length: 0\r\n" +
-                            "\r\n"
-            );
-
-        } catch (IOException e) {
-            throw new HttpException(500, "Error processing request: " + e.getMessage());
+        Address existingAddress = repository.get(id);
+        if (existingAddress == null) {
+            throw new NotFoundException("Address with ID " + id + " not found");
         }
+
+        JsonNode jsonNode = jsonParser.parseRequestBody(request);
+
+        Address updatedAddress = modelFactory.createAddress();
+        updatedAddress.setId(id);
+        populateAddressFromJson(updatedAddress, jsonNode);
+
+        repository.save(updatedAddress);
+
+        return responseBuilder.noContent();
     }
 
     public RawHttpResponse<?> delete(RawHttpRequest request) {
-
-        int id = extractIdFromPath(request.getUri().getPath());
+        int id = pathParser.extractIdFromPath(request.getUri().getPath());
 
         Address address = repository.get(id);
         if (address == null) {
-            throw new HttpException(404, "Address not found");
+            throw new NotFoundException("Address with ID " + id + " not found");
         }
 
         repository.delete(address);
 
-        return rawHttp.parseResponse(
-                "HTTP/1.1 204 No Content\r\n" +
-                        "Content-Length: 0\r\n" +
-                        "\r\n"
-        );
+        return responseBuilder.noContent();
     }
 
-    private int extractIdFromPath(String path) {
-        try {
-            String[] parts = path.split("/");
-            return Integer.parseInt(parts[parts.length - 1]);
-        } catch (NumberFormatException e) {
-            throw new HttpException(400, "Invalid ID format");
+    private void populateAddressFromJson(Address address, JsonNode jsonNode) {
+        if (jsonNode.has("street")) {
+            address.setStreet(jsonNode.get("street").asText());
+        }
+        if (jsonNode.has("city")) {
+            address.setCity(jsonNode.get("city").asText());
+        }
+        if (jsonNode.has("state")) {
+            address.setState(jsonNode.get("state").asText());
+        }
+        if (jsonNode.has("zipCode")) {
+            address.setZipCode(jsonNode.get("zipCode").asText());
+        }
+        if (jsonNode.has("country")) {
+            address.setCountry(jsonNode.get("country").asText());
         }
     }
 }

@@ -1,4 +1,12 @@
 package cat.uvic.teknos.dam.miruvic.server.factories;
 
-public class ModelFactory {
+import cat.uvic.teknos.dam.miruvic.model.Address;
+import cat.uvic.teknos.dam.miruvic.model.Student;
+
+public interface ModelFactory {
+
+    Address createAddress();
+
+    Student createStudent();
 }
+

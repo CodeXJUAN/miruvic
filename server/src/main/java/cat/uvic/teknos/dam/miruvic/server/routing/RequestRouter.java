@@ -3,20 +3,29 @@ package cat.uvic.teknos.dam.miruvic.server.routing;
 import cat.uvic.teknos.dam.miruvic.server.controllers.AddressController;
 import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.HttpException;
-import rawhttp.core.RawHttp;
+import cat.uvic.teknos.dam.miruvic.server.exceptions.MethodNotAllowedException;
+import cat.uvic.teknos.dam.miruvic.server.exceptions.NotFoundException;
+import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
+import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
 import rawhttp.core.RawHttpRequest;
 import rawhttp.core.RawHttpResponse;
 
 public class RequestRouter {
 
-    private final RawHttp rawHttp;
     private final AddressController addressController;
     private final StudentController studentController;
+    private final HttpResponseBuilder responseBuilder;
+    private final PathParser pathParser;
 
-    public RequestRouter(AddressController addressController, StudentController studentController) {
-        this.rawHttp = new RawHttp();
+    public RequestRouter(
+            AddressController addressController,
+            StudentController studentController,
+            HttpResponseBuilder responseBuilder,
+            PathParser pathParser) {
         this.addressController = addressController;
         this.studentController = studentController;
+        this.responseBuilder = responseBuilder;
+        this.pathParser = pathParser;
     }
 
     public RawHttpResponse<?> route(RawHttpRequest request) {
@@ -24,69 +33,79 @@ public class RequestRouter {
             String path = request.getUri().getPath();
             String method = request.getMethod();
 
-            System.out.println("Request: " + method + " " + path);
+            System.out.println("→ Request: " + method + " " + path);
 
-            if (path.equals("/addresses") || path.startsWith("/addresses/")) {
+            // Routing por recurso
+            if (path.startsWith("/addresses")) {
                 return routeAddresses(request, path, method);
             }
 
-            throw new HttpException(404, "Endpoint not found");
+            if (path.startsWith("/students")) {
+                return routeStudents(request, path, method);
+            }
+
+            throw new NotFoundException("Endpoint not found: " + path);
 
         } catch (HttpException e) {
-            return createErrorResponse(e.getStatusCode(), e.getMessage());
+            return responseBuilder.error(e.getStatusCode(), e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return createErrorResponse(500, "Internal server error: " + e.getMessage());
+            return responseBuilder.error(500, "Internal server error: " + e.getMessage());
         }
     }
 
     private RawHttpResponse<?> routeAddresses(RawHttpRequest request, String path, String method) {
-        if (path.equals("/addresses") && method.equals("GET")) {
+        boolean isCollection = pathParser.isCollectionPath(path, "addresses");
+        boolean isResource = pathParser.isResourcePath(path, "addresses");
+
+        if (isCollection && method.equals("GET")) {
             return addressController.getAll(request);
         }
 
-        if (path.matches("/addresses/\\d+") && method.equals("GET")) {
+        if (isResource && method.equals("GET")) {
             return addressController.get(request);
         }
 
-        if (path.equals("/addresses") && method.equals("POST")) {
+        if (isCollection && method.equals("POST")) {
             return addressController.post(request);
         }
 
-        if (path.matches("/addresses/\\d+") && method.equals("PUT")) {
+        if (isResource && method.equals("PUT")) {
             return addressController.put(request);
         }
 
-        if (path.matches("/addresses/\\d+") && method.equals("DELETE")) {
+        if (isResource && method.equals("DELETE")) {
             return addressController.delete(request);
         }
 
-        throw new HttpException(405, "Method not allowed");
+        throw new MethodNotAllowedException("Method " + method + " not allowed for " + path);
     }
 
-    private RawHttpResponse<?> createErrorResponse(int statusCode, String message) {
-        String statusText = getStatusText(statusCode);
-        String body = "{\"error\": \"" + message + "\"}";
+    private RawHttpResponse<?> routeStudents(RawHttpRequest request, String path, String method) {
+        boolean isCollection = pathParser.isCollectionPath(path, "students");
+        boolean isResource = pathParser.isResourcePath(path, "students");
 
-        return rawHttp.parseResponse(
-                "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
-                        "Content-Type: application/json\r\n" +
-                        "Content-Length: " + body.length() + "\r\n" +
-                        "\r\n" +
-                        body
-        );
-    }
+        if (isCollection && method.equals("GET")) {
+            return studentController.getAll(request);
+        }
 
-    private String getStatusText(int statusCode) {
-        return switch (statusCode) {
-            case 200 -> "OK";
-            case 201 -> "Created";
-            case 204 -> "No Content";
-            case 400 -> "Bad Request";
-            case 404 -> "Not Found";
-            case 405 -> "Method Not Allowed";
-            case 500 -> "Internal Server Error";
-            default -> "Unknown";
-        };
+        if (isResource && method.equals("GET")) {
+            return studentController.get(request);
+        }
+
+        if (isCollection && method.equals("POST")) {
+            return studentController.post(request);
+        }
+
+        if (isResource && method.equals("PUT")) {
+            return studentController.put(request);
+        }
+
+        if (isResource && method.equals("DELETE")) {
+            return studentController.delete(request);
+        }
+
+        throw new MethodNotAllowedException("Method " + method + " not allowed for " + path);
+
     }
 }

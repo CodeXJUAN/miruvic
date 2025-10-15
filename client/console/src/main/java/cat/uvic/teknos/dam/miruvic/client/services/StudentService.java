@@ -44,7 +44,8 @@ public class StudentService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 200) {
-                String json = response.getBody().toString();
+                // FIX: Usar decodeBodyToString en lugar de toString()
+                String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 StudentDTO[] students = objectMapper.readValue(json, StudentDTO[].class);
 
                 if (students.length == 0) {
@@ -78,7 +79,8 @@ public class StudentService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 200) {
-                String json = response.getBody().toString();
+                // FIX: Usar decodeBodyToString en lugar de toString()
+                String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 StudentDTO student = objectMapper.readValue(json, StudentDTO.class);
 
                 System.out.println("\n✓ Estudiante encontrado:");

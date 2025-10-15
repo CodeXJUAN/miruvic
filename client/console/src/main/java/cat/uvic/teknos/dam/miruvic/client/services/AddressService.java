@@ -45,7 +45,8 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 200) {
-                String json = response.getBody().toString();
+                // FIX: Usar decodeBodyToString en lugar de toString()
+                String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 AddressDTO[] addresses = objectMapper.readValue(json, AddressDTO[].class);
 
                 if (addresses.length == 0) {
@@ -79,7 +80,8 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 200) {
-                String json = response.getBody().toString();
+                // FIX: Usar decodeBodyToString en lugar de toString()
+                String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 AddressDTO address = objectMapper.readValue(json, AddressDTO.class);
 
                 System.out.println("\n Dirección encontrada:");

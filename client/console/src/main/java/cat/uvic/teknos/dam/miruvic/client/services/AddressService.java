@@ -29,7 +29,7 @@ public class AddressService {
     }
 
     public void listAll() {
-        System.out.println("\n📋 Listando todas las direcciones...");
+        System.out.println("\n Listando todas las direcciones...");
 
         try (Socket socket = new Socket(host, port)) {
 
@@ -49,22 +49,22 @@ public class AddressService {
                 AddressDTO[] addresses = objectMapper.readValue(json, AddressDTO[].class);
 
                 if (addresses.length == 0) {
-                    System.out.println("⚠  No hay direcciones registradas.");
+                    System.out.println("No hay direcciones registradas.");
                 } else {
-                    System.out.println("✓ Se encontraron " + addresses.length + " direcciones:\n");
+                    System.out.println("Se encontraron " + addresses.length + " direcciones:\n");
                     printAddressTable(Arrays.asList(addresses));
                 }
             } else {
-                System.out.println("❌ Error: " + response.getStatusCode() + " - " + response.getStartLine().getReason());
+                System.out.println("Error: " + response.getStatusCode() + " - " + response.getStartLine().getReason());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 
     public void getById(Scanner scanner) {
-        System.out.print("\n🔍 Ingrese el ID de la dirección: ");
+        System.out.print("\n Ingrese el ID de la dirección: ");
         String id = scanner.nextLine().trim();
 
         try (Socket socket = new Socket(host, port)) {
@@ -82,21 +82,21 @@ public class AddressService {
                 String json = response.getBody().toString();
                 AddressDTO address = objectMapper.readValue(json, AddressDTO.class);
 
-                System.out.println("\n✓ Dirección encontrada:");
+                System.out.println("\n Dirección encontrada:");
                 printAddressDetails(address);
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontró una dirección con ID " + id);
             } else {
-                System.out.println("❌ Error: " + response.getStatusCode());
+                System.out.println(" Error: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexión: " + e.getMessage());
         }
     }
 
     public void create(Scanner scanner) {
-        System.out.println("\n➕ Crear nueva dirección");
+        System.out.println("\n Crear nueva dirección");
 
         AddressDTO address = new AddressDTO();
 
@@ -130,18 +130,18 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 201) {
-                System.out.println("✓ Dirección creada exitosamente");
+                System.out.println(" Dirección creada exitosamente");
             } else {
-                System.out.println("❌ Error al crear: " + response.getStatusCode());
+                System.out.println(" Error al crear: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexión: " + e.getMessage());
         }
     }
 
     public void update(Scanner scanner) {
-        System.out.print("\n✏  Ingrese el ID de la dirección a actualizar: ");
+        System.out.print("\n Ingrese el ID de la dirección a actualizar: ");
         String id = scanner.nextLine().trim();
 
         AddressDTO address = new AddressDTO();
@@ -176,15 +176,15 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println("✓ Dirección actualizada exitosamente");
+                System.out.println(" Dirección actualizada exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontró una dirección con ID " + id);
             } else {
-                System.out.println("❌ Error al actualizar: " + response.getStatusCode());
+                System.out.println(" Error al actualizar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexión: " + e.getMessage());
         }
     }
 
@@ -211,15 +211,15 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println("✓ Dirección eliminada exitosamente");
+                System.out.println(" Dirección eliminada exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontró una dirección con ID " + id);
             } else {
-                System.out.println("❌ Error al eliminar: " + response.getStatusCode());
+                System.out.println(" Error al eliminar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexión: " + e.getMessage());
         }
     }
 

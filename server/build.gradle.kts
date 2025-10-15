@@ -4,6 +4,12 @@
 
 plugins {
     id("buildlogic.java-library-conventions")
+    id("application")
+}
+
+application {
+    // Replace with your actual main class
+    mainClass.set("cat.uvic.teknos.dam.miruvic.server.App")
 }
 
 dependencies {
@@ -12,6 +18,7 @@ dependencies {
     implementation(project(":model"))
     implementation(project(":repositories"))
 
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.17.2")
     implementation("com.mysql:mysql-connector-j:9.3.0")
     implementation("com.athaydes.rawhttp:rawhttp-core:2.6.0")
     implementation("com.fasterxml.jackson.core:jackson-core:2.17.2")

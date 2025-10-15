@@ -11,13 +11,13 @@ import rawhttp.core.RawHttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 public class AddressController {
 
     private final AddressRepository repository;
     private final ObjectMapper objectMapper;
     private final RawHttp rawHttp;
-
 
     public AddressController(AddressRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
@@ -27,7 +27,6 @@ public class AddressController {
 
     public RawHttpResponse<?> get(RawHttpRequest request) {
         try {
-
             int id = extractIdFromPath(request.getUri().getPath());
 
             Address address = repository.get(id);
@@ -51,11 +50,9 @@ public class AddressController {
         }
     }
 
-
     public RawHttpResponse<?> getAll(RawHttpRequest request) {
         try {
-
-            var addresses = repository.getAll();
+            Set<Address> addresses = repository.getAll();
 
             String json = objectMapper.writeValueAsString(addresses);
 
@@ -71,6 +68,7 @@ public class AddressController {
             throw new HttpException(500, "Error processing request: " + e.getMessage());
         }
     }
+
     public RawHttpResponse<?> post(RawHttpRequest request) {
         try {
 

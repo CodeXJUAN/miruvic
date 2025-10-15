@@ -30,7 +30,7 @@ public class StudentService {
     }
 
     public void listAll() {
-        System.out.println("\n📋 Listando todos los estudiantes...");
+        System.out.println("\n Listando todos los estudiantes...");
 
         try (Socket socket = new Socket(host, port)) {
             RawHttpRequest request = rawHttp.parseRequest(
@@ -48,22 +48,22 @@ public class StudentService {
                 StudentDTO[] students = objectMapper.readValue(json, StudentDTO[].class);
 
                 if (students.length == 0) {
-                    System.out.println("⚠  No hay estudiantes registrados.");
+                    System.out.println("No hay estudiantes registrados.");
                 } else {
-                    System.out.println("✓ Se encontraron " + students.length + " estudiantes:\n");
+                    System.out.println("Se encontraron " + students.length + " estudiantes:\n");
                     printStudentTable(Arrays.asList(students));
                 }
             } else {
-                System.out.println("❌ Error: " + response.getStatusCode());
+                System.out.println("Error: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 
     public void getById(Scanner scanner) {
-        System.out.print("\n🔍 Ingrese el ID del estudiante: ");
+        System.out.print("\n Ingrese el ID del estudiante: ");
         String id = scanner.nextLine().trim();
 
         try (Socket socket = new Socket(host, port)) {
@@ -84,18 +84,18 @@ public class StudentService {
                 System.out.println("\n✓ Estudiante encontrado:");
                 printStudentDetails(student);
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontró un estudiante con ID " + id);
             } else {
-                System.out.println("❌ Error: " + response.getStatusCode());
+                System.out.println("Error: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 
     public void create(Scanner scanner) {
-        System.out.println("\n➕ Crear nuevo estudiante");
+        System.out.println("\n Crear nuevo estudiante");
 
         System.out.print("Nombre: ");
         String firstName = scanner.nextLine().trim();
@@ -132,7 +132,7 @@ public class StudentService {
                     int addressId = Integer.parseInt(addressIdStr);
                     jsonNode.put("addressId", addressId);
                 } catch (NumberFormatException e) {
-                    System.out.println("⚠️  ID de dirección inválido, se omitirá.");
+                    System.out.println(" ID de dirección inválido, se omitirá.");
                 }
             }
 
@@ -152,14 +152,14 @@ public class StudentService {
             if (response.getStatusCode() == 201) {
                 System.out.println("✓ Estudiante creado exitosamente");
             } else {
-                System.out.println("❌ Error al crear: " + response.getStatusCode());
+                System.out.println("Error al crear: " + response.getStatusCode());
                 if (response.getBody().isPresent()) {
                     System.out.println("   " + response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8));
                 }
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 
@@ -201,7 +201,7 @@ public class StudentService {
                     int addressId = Integer.parseInt(addressIdStr);
                     jsonNode.put("addressId", addressId);
                 } catch (NumberFormatException e) {
-                    System.out.println("⚠ ID de dirección inválido, se omitirá.");
+                    System.out.println("ID de dirección inválido, se omitirá.");
                 }
             }
 
@@ -219,23 +219,23 @@ public class StudentService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println("✓ Estudiante actualizado exitosamente");
+                System.out.println("Estudiante actualizado exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontró un estudiante con ID " + id);
             } else {
-                System.out.println("❌ Error al actualizar: " + response.getStatusCode());
+                System.out.println("Error al actualizar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 
     public void delete(Scanner scanner) {
-        System.out.print("\n🗑  Ingrese el ID del estudiante a eliminar: ");
+        System.out.print("\n Ingrese el ID del estudiante a eliminar: ");
         String id = scanner.nextLine().trim();
 
-        System.out.print("⚠ ¿Está seguro? (s/n): ");
+        System.out.print("¿Está seguro? (s/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("s")) {
@@ -254,15 +254,15 @@ public class StudentService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println("✓ Estudiante eliminado exitosamente");
+                System.out.println("Estudiante eliminado exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("❌ No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontró un estudiante con ID " + id);
             } else {
-                System.out.println("❌ Error al eliminar: " + response.getStatusCode());
+                System.out.println("Error al eliminar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexión: " + e.getMessage());
         }
     }
 

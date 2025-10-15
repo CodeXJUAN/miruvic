@@ -12,7 +12,7 @@ public class JdbcRepositoryFactory implements RepositoryFactory, AutoCloseable {
     private final DataSource dataSource;
 
     public JdbcRepositoryFactory() {
-        this.dataSource = new HikariDataSourceWrapper();
+        this.dataSource = new  HikariDataSourceWrapper();
     }
     
     @Override

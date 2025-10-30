@@ -1,5 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.client.services;
 
+import cat.uvic.teknos.dam.miruvic.client.ActivityAwareScanner;
 import cat.uvic.teknos.dam.miruvic.client.models.AddressDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import rawhttp.core.RawHttp;
@@ -12,7 +13,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class AddressService {
 
@@ -63,7 +63,7 @@ public class AddressService {
         }
     }
 
-    public void getById(Scanner scanner) {
+    public void getById(ActivityAwareScanner scanner) {
         System.out.print("\n Ingrese el ID de la dirección: ");
         String id = scanner.nextLine().trim();
 
@@ -95,7 +95,7 @@ public class AddressService {
         }
     }
 
-    public void create(Scanner scanner) {
+    public void create(ActivityAwareScanner scanner) {
         System.out.println("\n Crear nueva dirección");
 
         AddressDTO address = new AddressDTO();
@@ -140,7 +140,7 @@ public class AddressService {
         }
     }
 
-    public void update(Scanner scanner) {
+    public void update(ActivityAwareScanner scanner) {
         System.out.print("\n Ingrese el ID de la dirección a actualizar: ");
         String id = scanner.nextLine().trim();
 
@@ -188,7 +188,7 @@ public class AddressService {
         }
     }
 
-    public void delete(Scanner scanner) {
+    public void delete(ActivityAwareScanner scanner) {
         System.out.print("\n🗑  Ingrese el ID de la dirección a eliminar: ");
         String id = scanner.nextLine().trim();
 
@@ -223,7 +223,7 @@ public class AddressService {
         }
     }
 
-    public void showMenu(Scanner scanner) {
+    public void showMenu(ActivityAwareScanner scanner) {
         while (true) {
             System.out.println("\n📍 MENU DE DIRECCIONES");
             System.out.println("1. Listar todas las direcciones");

@@ -1,5 +1,6 @@
 package cat.uvic.teknos.dam.miruvic.client.services;
 
+import cat.uvic.teknos.dam.miruvic.client.ActivityAwareScanner;
 import cat.uvic.teknos.dam.miruvic.client.models.StudentDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,7 +14,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class StudentService {
 
@@ -62,7 +62,7 @@ public class StudentService {
         }
     }
 
-    public void getById(Scanner scanner) {
+    public void getById(ActivityAwareScanner scanner) {
         System.out.print("\n Ingrese el ID del estudiante: ");
         String id = scanner.nextLine().trim();
 
@@ -94,7 +94,7 @@ public class StudentService {
         }
     }
 
-    public void create(Scanner scanner) {
+    public void create(ActivityAwareScanner scanner) {
         System.out.println("\n Crear nuevo estudiante");
 
         System.out.print("Nombre: ");
@@ -163,7 +163,7 @@ public class StudentService {
         }
     }
 
-    public void update(Scanner scanner) {
+    public void update(ActivityAwareScanner scanner) {
         System.out.print("\n✏ Ingrese el ID del estudiante a actualizar: ");
         String id = scanner.nextLine().trim();
 
@@ -231,7 +231,7 @@ public class StudentService {
         }
     }
 
-    public void delete(Scanner scanner) {
+    public void delete(ActivityAwareScanner scanner) {
         System.out.print("\n Ingrese el ID del estudiante a eliminar: ");
         String id = scanner.nextLine().trim();
 
@@ -266,7 +266,7 @@ public class StudentService {
         }
     }
 
-    public void showMenu(Scanner scanner) {
+    public void showMenu(ActivityAwareScanner scanner) {
         while (true) {
             System.out.println("\n👥 MENU DE ESTUDIANTES");
             System.out.println("1. Listar todos los estudiantes");

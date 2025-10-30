@@ -17,17 +17,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Cliente de consola para interactuar con el servidor MIRUVIC.
- * Responsabilidad: Mostrar menú y coordinar las operaciones del usuario.
- */
 public class ConsoleClient {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 5000;
-    private static final long INACTIVITY_TIMEOUT_MS = 120_000; // 2 minutos
+    private static final long INACTIVITY_TIMEOUT_MS = 120_000;
 
-    private final Scanner scanner;
+    private final ActivityAwareScanner scanner;
     private final AddressService addressService;
     private final StudentService studentService;
     private final RawHttp rawHttp = new RawHttp();
@@ -38,7 +34,13 @@ public class ConsoleClient {
     private final ScheduledExecutorService inactivityMonitor;
 
     public ConsoleClient() {
-        this.scanner = new Scanner(System.in);
+        // Inactivity setup
+        this.activityLock = new ReentrantLock();
+        this.inactivityMonitor = Executors.newScheduledThreadPool(1);
+        updateActivity(); // Initial activity
+
+        // Scanner con detección de actividad
+        this.scanner = new ActivityAwareScanner(new Scanner(System.in), this::updateActivity);
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -46,10 +48,6 @@ public class ConsoleClient {
         this.addressService = new AddressService(SERVER_HOST, SERVER_PORT, objectMapper);
         this.studentService = new StudentService(SERVER_HOST, SERVER_PORT, objectMapper);
 
-        // Inactivity setup
-        this.activityLock = new ReentrantLock();
-        this.inactivityMonitor = Executors.newScheduledThreadPool(1);
-        updateActivity(); // Initial activity
         startInactivityMonitor();
     }
 
@@ -58,7 +56,7 @@ public class ConsoleClient {
         client.run();
     }
 
-    private void updateActivity() {
+    public void updateActivity() {
         activityLock.lock();
         try {
             lastActivityTime = System.currentTimeMillis();
@@ -113,7 +111,6 @@ public class ConsoleClient {
             try {
                 showMenu();
                 int option = readOption();
-                updateActivity(); // Actualizar tiempo de actividad
 
                 switch (option) {
                     case 1:
@@ -152,13 +149,11 @@ public class ConsoleClient {
     }
 
     private void manageAddresses() {
-        updateActivity(); // Actualizar tiempo de actividad
         System.out.println("\n📍 GESTIÓN DE DIRECCIONES");
         addressService.showMenu(scanner);
     }
 
     private void manageStudents() {
-        updateActivity(); // Actualizar tiempo de actividad
         System.out.println("\n👥 GESTIÓN DE ESTUDIANTES");
         studentService.showMenu(scanner);
     }

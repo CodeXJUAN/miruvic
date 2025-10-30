@@ -4,8 +4,18 @@ import cat.uvic.teknos.dam.miruvic.client.services.AddressService;
 import cat.uvic.teknos.dam.miruvic.client.services.StudentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import rawhttp.core.RawHttp;
+import rawhttp.core.RawHttpRequest;
+import rawhttp.core.RawHttpResponse;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Cliente de consola para interactuar con el servidor MIRUVIC.
@@ -15,21 +25,32 @@ public class ConsoleClient {
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 5000;
+    private static final long INACTIVITY_TIMEOUT_MS = 120_000; // 2 minutos
 
     private final Scanner scanner;
     private final AddressService addressService;
     private final StudentService studentService;
+    private final RawHttp rawHttp = new RawHttp();
+
+    // Inactivity tracking
+    private final Lock activityLock;
+    private volatile long lastActivityTime;
+    private final ScheduledExecutorService inactivityMonitor;
 
     public ConsoleClient() {
         this.scanner = new Scanner(System.in);
 
-        // Configurar ObjectMapper con soporte para fechas
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        // Crear servicios
         this.addressService = new AddressService(SERVER_HOST, SERVER_PORT, objectMapper);
         this.studentService = new StudentService(SERVER_HOST, SERVER_PORT, objectMapper);
+
+        // Inactivity setup
+        this.activityLock = new ReentrantLock();
+        this.inactivityMonitor = Executors.newScheduledThreadPool(1);
+        updateActivity(); // Initial activity
+        startInactivityMonitor();
     }
 
     public static void main(String[] args) {
@@ -37,140 +58,108 @@ public class ConsoleClient {
         client.run();
     }
 
+    private void updateActivity() {
+        activityLock.lock();
+        try {
+            lastActivityTime = System.currentTimeMillis();
+        } finally {
+            activityLock.unlock();
+        }
+    }
+
+    private void startInactivityMonitor() {
+        inactivityMonitor.scheduleAtFixedRate(() -> {
+            activityLock.lock();
+            try {
+                long inactiveTime = System.currentTimeMillis() - lastActivityTime;
+                if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
+                    System.out.println("\n⚠️ Inactivity detected. Disconnecting...");
+                    sendDisconnectAndExit();
+                }
+            } finally {
+                activityLock.unlock();
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    private void sendDisconnectAndExit() {
+        try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT)) {
+            System.out.println("  → Sending disconnect message to server...");
+            RawHttpRequest disconnectRequest = rawHttp.parseRequest("GET /disconnect HTTP/1.1\nHost: " + SERVER_HOST);
+            disconnectRequest.writeTo(socket.getOutputStream());
+
+            RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+
+            if (response.getStatusCode() == 200) {
+                System.out.println("  ✓ Server acknowledged disconnect.");
+            } else {
+                System.out.println("  ✗ Server responded with status: " + response.getStatusCode());
+            }
+        } catch (IOException e) {
+            System.err.println("  ✗ Error during disconnect: " + e.getMessage());
+        } finally {
+            System.out.println("Exiting client.");
+            inactivityMonitor.shutdownNow();
+            System.exit(0);
+        }
+    }
+
     public void run() {
-        showBanner();
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     MIRUVIC CLIENT v1.0               ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
-        System.out.println("Conectando al servidor " + SERVER_HOST + ":" + SERVER_PORT + "...");
-        System.out.println("✓ Cliente iniciado correctamente\n");
+        while (true) {
+            try {
+                showMenu();
+                int option = readOption();
+                updateActivity(); // Actualizar tiempo de actividad
 
-        boolean running = true;
-        while (running) {
-            showMainMenu();
-            String option = scanner.nextLine().trim();
-
-            switch (option) {
-                case "1":
-                    manageAddresses();
-                    break;
-                case "2":
-                    manageStudents();
-                    break;
-                case "0":
-                    running = false;
-                    System.out.println("\n¡Hasta pronto! 👋");
-                    break;
-                default:
-                    System.out.println("❌ Opción no válida. Intenta de nuevo.\n");
+                switch (option) {
+                    case 1:
+                        manageAddresses();
+                        break;
+                    case 2:
+                        manageStudents();
+                        break;
+                    case 0:
+                        System.out.println("\n👋 ¡Hasta pronto!");
+                        sendDisconnectAndExit();
+                        return;
+                    default:
+                        System.out.println("\n❌ Opción no válida");
+                }
+            } catch (Exception e) {
+                System.err.println("\n❌ Error: " + e.getMessage());
             }
         }
-
-        scanner.close();
     }
 
-    private void showBanner() {
-        System.out.println("\n");
-        System.out.println("███╗   ███╗██╗██████╗ ██╗   ██╗██╗   ██╗██╗ ██████╗");
-        System.out.println("████╗ ████║██║██╔══██╗██║   ██║██║   ██║██║██╔════╝");
-        System.out.println("██╔████╔██║██║██████╔╝██║   ██║██║   ██║██║██║     ");
-        System.out.println("██║╚██╔╝██║██║██╔══██╗██║   ██║╚██╗ ██╔╝██║██║     ");
-        System.out.println("██║ ╚═╝ ██║██║██║  ██║╚██████╔╝ ╚████╔╝ ██║╚██████╗");
-        System.out.println("╚═╝     ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚═╝ ╚═════╝");
-        System.out.println("                   CLIENT v1.0");
-        System.out.println();
+    private void showMenu() {
+        System.out.println("\n📋 MENÚ PRINCIPAL");
+        System.out.println("1. Gestionar direcciones");
+        System.out.println("2. Gestionar estudiantes");
+        System.out.println("0. Salir");
+        System.out.print("\n→ Seleccione una opción: ");
     }
 
-    private void showMainMenu() {
-        System.out.println("╔════════════════════════════════════╗");
-        System.out.println("║         MENÚ PRINCIPAL            ║");
-        System.out.println("╠════════════════════════════════════╣");
-        System.out.println("║  1. Gestionar Direcciones         ║");
-        System.out.println("║  2. Gestionar Estudiantes         ║");
-        System.out.println("║  0. Salir                         ║");
-        System.out.println("╚════════════════════════════════════╝");
-        System.out.print("Seleccione una opción: ");
+    private int readOption() {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     private void manageAddresses() {
-        boolean back = false;
-        while (!back) {
-            System.out.println("\n╔════════════════════════════════════╗");
-            System.out.println("║     GESTIÓN DE DIRECCIONES        ║");
-            System.out.println("╠════════════════════════════════════╣");
-            System.out.println("║  1. Ver todas las direcciones     ║");
-            System.out.println("║  2. Ver dirección por ID          ║");
-            System.out.println("║  3. Crear nueva dirección         ║");
-            System.out.println("║  4. Actualizar dirección          ║");
-            System.out.println("║  5. Eliminar dirección            ║");
-            System.out.println("║  0. Volver                        ║");
-            System.out.println("╚════════════════════════════════════╝");
-            System.out.print("Seleccione una opción: ");
-
-            String option = scanner.nextLine().trim();
-
-            switch (option) {
-                case "1":
-                    addressService.listAll();
-                    break;
-                case "2":
-                    addressService.getById(scanner);
-                    break;
-                case "3":
-                    addressService.create(scanner);
-                    break;
-                case "4":
-                    addressService.update(scanner);
-                    break;
-                case "5":
-                    addressService.delete(scanner);
-                    break;
-                case "0":
-                    back = true;
-                    break;
-                default:
-                    System.out.println("❌ Opción no válida.\n");
-            }
-        }
+        updateActivity(); // Actualizar tiempo de actividad
+        System.out.println("\n📍 GESTIÓN DE DIRECCIONES");
+        addressService.showMenu(scanner);
     }
 
     private void manageStudents() {
-        boolean back = false;
-        while (!back) {
-            System.out.println("\n╔════════════════════════════════════╗");
-            System.out.println("║     GESTIÓN DE ESTUDIANTES        ║");
-            System.out.println("╠════════════════════════════════════╣");
-            System.out.println("║  1. Ver todos los estudiantes     ║");
-            System.out.println("║  2. Ver estudiante por ID         ║");
-            System.out.println("║  3. Crear nuevo estudiante        ║");
-            System.out.println("║  4. Actualizar estudiante         ║");
-            System.out.println("║  5. Eliminar estudiante           ║");
-            System.out.println("║  0. Volver                        ║");
-            System.out.println("╚════════════════════════════════════╝");
-            System.out.print("Seleccione una opción: ");
-
-            String option = scanner.nextLine().trim();
-
-            switch (option) {
-                case "1":
-                    studentService.listAll();
-                    break;
-                case "2":
-                    studentService.getById(scanner);
-                    break;
-                case "3":
-                    studentService.create(scanner);
-                    break;
-                case "4":
-                    studentService.update(scanner);
-                    break;
-                case "5":
-                    studentService.delete(scanner);
-                    break;
-                case "0":
-                    back = true;
-                    break;
-                default:
-                    System.out.println("❌ Opción no válida.\n");
-            }
-        }
+        updateActivity(); // Actualizar tiempo de actividad
+        System.out.println("\n👥 GESTIÓN DE ESTUDIANTES");
+        studentService.showMenu(scanner);
     }
 }

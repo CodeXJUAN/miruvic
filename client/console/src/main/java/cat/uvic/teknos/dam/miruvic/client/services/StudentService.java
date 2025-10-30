@@ -43,8 +43,7 @@ public class StudentService {
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
-            if (response.getStatusCode() == 200) {
-                // FIX: Usar decodeBodyToString en lugar de toString()
+            if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 StudentDTO[] students = objectMapper.readValue(json, StudentDTO[].class);
 
@@ -78,8 +77,7 @@ public class StudentService {
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
-            if (response.getStatusCode() == 200) {
-                // FIX: Usar decodeBodyToString en lugar de toString()
+            if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 StudentDTO student = objectMapper.readValue(json, StudentDTO.class);
 
@@ -268,50 +266,82 @@ public class StudentService {
         }
     }
 
+    public void showMenu(Scanner scanner) {
+        while (true) {
+            System.out.println("\n👥 MENU DE ESTUDIANTES");
+            System.out.println("1. Listar todos los estudiantes");
+            System.out.println("2. Buscar estudiante por ID");
+            System.out.println("3. Crear nuevo estudiante");
+            System.out.println("4. Actualizar estudiante");
+            System.out.println("5. Eliminar estudiante");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\n→ Seleccione una opción: ");
+
+            try {
+                int option = Integer.parseInt(scanner.nextLine());
+
+                switch (option) {
+                    case 1:
+                        listAll();
+                        break;
+                    case 2:
+                        getById(scanner);
+                        break;
+                    case 3:
+                        create(scanner);
+                        break;
+                    case 4:
+                        update(scanner);
+                        break;
+                    case 5:
+                        delete(scanner);
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        System.out.println("\n❌ Opción no válida");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\n❌ Por favor, ingrese un número válido");
+            }
+        }
+    }
+
     private void printStudentTable(List<StudentDTO> students) {
-        System.out.println("┌──────┬──────────────────┬──────────────────┬─────────────────────────────┬──────────────┬────────────┐");
-        System.out.println("│  ID  │     Nombre       │    Apellido      │           Email             │   Teléfono   │ Address ID │");
-        System.out.println("├──────┼──────────────────┼──────────────────┼─────────────────────────────┼──────────────┼────────────┤");
+        System.out.println("┌───────────┬─────────────────┬──────────────┬────────────┐");
+        System.out.println("│    ID     │     NOMBRE     │  APELLIDOS   │   EMAIL    │");
+        System.out.println("├───────────┼─────────────────┼──────────────┼────────────┤");
 
         for (StudentDTO student : students) {
-            System.out.printf("│ %-4d │ %-16s │ %-16s │ %-27s │ %-12s │ %-10s │%n",
-                    student.getId() != null ? student.getId() : 0,
-                    truncate(student.getFirstName(), 16),
-                    truncate(student.getLastName(), 16),
-                    truncate(student.getEmail(), 27),
-                    truncate(student.getPhoneNumber(), 12),
-                    student.getAddress() != null && student.getAddress().getId() != null ?
-                            student.getAddress().getId().toString() : "N/A"
-            );
+            System.out.printf("│ %-9s │ %-13s │ %-10s │ %-10s │%n",
+                    student.getId(),
+                    truncateString(student.getFirstName(), 13),
+                    truncateString(student.getLastName(), 10),
+                    truncateString(student.getEmail(), 10));
         }
 
-        System.out.println("└──────┴──────────────────┴──────────────────┴─────────────────────────────┴──────────────┴────────────┘");
+        System.out.println("└───────────┴─────────────────┴──────────────┴────────────┘");
     }
 
     private void printStudentDetails(StudentDTO student) {
-        System.out.println("┌────────────────────────────────────────────────┐");
-        System.out.println("│        DETALLES DEL ESTUDIANTE                │");
-        System.out.println("├────────────────────────────────────────────────┤");
-        System.out.println("│ ID:         " + student.getId());
-        System.out.println("│ Nombre:     " + student.getFirstName());
-        System.out.println("│ Apellido:   " + student.getLastName());
-        System.out.println("│ Email:      " + student.getEmail());
-        System.out.println("│ Teléfono:   " + (student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A"));
-
+        System.out.println("┌──────────────────────────────────────────┐");
+        System.out.println("│ DETALLES DEL ESTUDIANTE                 │");
+        System.out.println("├─────────────────┬────────────────────────┤");
+        System.out.printf("│ ID              │ %-20s │%n", student.getId());
+        System.out.printf("│ Nombre          │ %-20s │%n", student.getFirstName());
+        System.out.printf("│ Apellidos       │ %-20s │%n", student.getLastName());
+        System.out.printf("│ Email           │ %-20s │%n", student.getEmail());
+        System.out.printf("│ Teléfono        │ %-20s │%n", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
         if (student.getAddress() != null) {
-            System.out.println("│ Dirección:");
-            System.out.println("│   - ID:     " + student.getAddress().getId());
-            System.out.println("│   - Calle:  " + student.getAddress().getStreet());
-            System.out.println("│   - Ciudad: " + student.getAddress().getCity());
-            System.out.println("│   - País:   " + student.getAddress().getCountry());
-        } else {
-            System.out.println("│ Dirección:  Sin dirección asignada");
+            System.out.printf("│ Dir. ID         │ %-20s │%n", student.getAddress().getId());
+            System.out.printf("│ Dirección       │ %-20s │%n",
+                    truncateString(student.getAddress().getStreet() + ", " +
+                            student.getAddress().getCity(), 20));
         }
-
-        System.out.println("└────────────────────────────────────────────────┘");
+        System.out.println("└─────────────────┴────────────────────────┘");
     }
 
-    private String truncate(String str, int length) {
+    private String truncateString(String str, int length) {
         if (str == null) return "";
         return str.length() > length ? str.substring(0, length - 3) + "..." : str;
     }

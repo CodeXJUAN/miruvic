@@ -36,6 +36,12 @@ public record RequestRouter(
                 return routeStudents(request, path, method);
             }
 
+            // Ruta de desconexión especial
+            if (path.equals("/disconnect")) {
+                logger.info("Cliente solicitó desconexión");
+                return responseBuilder.success(200, "OK");
+            }
+
             throw new NotFoundException("Endpoint not found: " + path);
 
         } catch (HttpException e) {

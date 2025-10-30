@@ -1,29 +1,32 @@
 package cat.uvic.teknos.dam.miruvic.server;
 
 import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
-import rawhttp.core.RawHttp;
-import rawhttp.core.RawHttpRequest;
-import rawhttp.core.RawHttpResponse;
+import cat.uvic.teknos.dam.miruvic.server.utils.ClientHandler;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
 
     private final int port;
     private final RequestRouter router;
-    private final RawHttp rawHttp;
     private final ExecutorService executorService;
+    private final ScheduledExecutorService monitorService;
+    private final ConcurrentHashMap<String, ClientHandler> activeClients;
+    private final Lock clientLock;
     private volatile boolean running;
 
     public Server(int port, RequestRouter router) {
         this.port = port;
         this.router = router;
-        this.rawHttp = new RawHttp();
         this.executorService = Executors.newFixedThreadPool(10);
+        this.monitorService = Executors.newScheduledThreadPool(1);
+        this.activeClients = new ConcurrentHashMap<>();
+        this.clientLock = new ReentrantLock();
         this.running = false;
     }
 
@@ -34,6 +37,8 @@ public class Server {
         System.out.println("║     MIRUVIC SERVER STARTING...        ║");
         System.out.println("╚════════════════════════════════════════╝");
 
+        startClientMonitorDaemon();
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("✓ Server listening on port " + port);
             System.out.println("✓ Waiting for client connections...");
@@ -42,20 +47,16 @@ public class Server {
             while (running) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-
                     System.out.println("→ New client connected: " +
                             clientSocket.getInetAddress().getHostAddress() +
                             ":" + clientSocket.getPort());
-
                     executorService.submit(() -> handleClient(clientSocket));
-
                 } catch (IOException e) {
                     if (running) {
                         System.err.println("✗ Error accepting client connection: " + e.getMessage());
                     }
                 }
             }
-
         } catch (IOException e) {
             System.err.println("✗ FATAL: Could not start server on port " + port);
             System.err.println("  Reason: " + e.getMessage());
@@ -65,39 +66,72 @@ public class Server {
         }
     }
 
+    private void startClientMonitorDaemon() {
+        monitorService.scheduleAtFixedRate(() -> {
+            clientLock.lock();
+            try {
+                System.out.println("📊 Connected clients: " + activeClients.size());
+            } finally {
+                clientLock.unlock();
+            }
+        }, 1, 1, TimeUnit.MINUTES);
+        System.out.println("✓ Client monitor daemon started.");
+    }
+
     private void handleClient(Socket clientSocket) {
         String clientId = clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort();
+        ClientHandler handler = new ClientHandler(clientSocket, router, this);
+
+        clientLock.lock();
+        try {
+            activeClients.put(clientId, handler);
+        } finally {
+            clientLock.unlock();
+        }
 
         try {
-            RawHttpRequest request = rawHttp.parseRequest(clientSocket.getInputStream()).eagerly();
-            System.out.println("  ← [" + clientId + "] " + request.getMethod() + " " + request.getUri().getPath());
-            RawHttpResponse<?> response = router.route(request);
-            response.writeTo(clientSocket.getOutputStream());
-            System.out.println("  → [" + clientId + "] " + response.getStatusCode() + " " + response.getStartLine().getReason());
-
-        } catch (IOException e) {
-            System.err.println("  ✗ [" + clientId + "] Error handling request: " + e.getMessage());
+            handler.handle();
         } finally {
-            try {
-                clientSocket.close();
-                System.out.println("  ✓ [" + clientId + "] Connection closed\n");
-            } catch (IOException e) {
-                System.err.println("  ✗ [" + clientId + "] Error closing socket: " + e.getMessage());
+            removeClient(clientId);
+            System.out.println("  ✓ [" + clientId + "] Connection closed\n");
+        }
+    }
+
+    public void removeClient(String clientId) {
+        clientLock.lock();
+        try {
+            ClientHandler handler = activeClients.remove(clientId);
+            if (handler != null) {
+                System.out.println("✓ Client " + clientId + " removed from active clients");
             }
+        } finally {
+            clientLock.unlock();
         }
     }
 
     public void shutdown() {
-        if (running) {
-            System.out.println("\n╔════════════════════════════════════════╗");
-            System.out.println("║     SHUTTING DOWN SERVER...           ║");
-            System.out.println("╚════════════════════════════════════════╝");
+        running = false;
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     SHUTTING DOWN SERVER...           ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
-            running = false;
-            executorService.shutdown();
+        monitorService.shutdown();
+        executorService.shutdown();
 
-            System.out.println("✓ Server stopped");
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+            if (!monitorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                monitorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            monitorService.shutdownNow();
+            Thread.currentThread().interrupt();
         }
+
+        System.out.println("✓ Server shutdown complete");
     }
 
     public int getPort() {

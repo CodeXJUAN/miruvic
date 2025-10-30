@@ -60,6 +60,19 @@ public record HttpResponseBuilder() {
         );
     }
 
+    public RawHttpResponse<?> success(int statusCode, String message) {
+        String statusText = getStatusText(statusCode);
+        String body = "{\"message\": \"" + escapeJson(message) + "\"}";
+
+        return RAW_HTTP.parseResponse(
+                "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
+                        "Content-Type: application/json\r\n" +
+                        "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
+                        "\r\n" +
+                        body
+        );
+    }
+
     private String getStatusText(int statusCode) {
         return switch (statusCode) {
             case 200 -> "OK";

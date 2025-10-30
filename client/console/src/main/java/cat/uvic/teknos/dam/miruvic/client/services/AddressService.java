@@ -44,8 +44,7 @@ public class AddressService {
 
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
-            if (response.getStatusCode() == 200) {
-                // FIX: Usar decodeBodyToString en lugar de toString()
+            if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 AddressDTO[] addresses = objectMapper.readValue(json, AddressDTO[].class);
 
@@ -79,8 +78,7 @@ public class AddressService {
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
-            if (response.getStatusCode() == 200) {
-                // FIX: Usar decodeBodyToString en lugar de toString()
+            if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 AddressDTO address = objectMapper.readValue(json, AddressDTO.class);
 
@@ -225,39 +223,77 @@ public class AddressService {
         }
     }
 
-    private void printAddressTable(List<AddressDTO> addresses) {
-        System.out.println("┌──────┬─────────────────────┬─────────────────┬─────────────────┬────────────┬─────────────┐");
-        System.out.println("│  ID  │       Calle         │     Ciudad      │   Provincia     │   Código   │    País     │");
-        System.out.println("├──────┼─────────────────────┼─────────────────┼─────────────────┼────────────┼─────────────┤");
+    public void showMenu(Scanner scanner) {
+        while (true) {
+            System.out.println("\n📍 MENU DE DIRECCIONES");
+            System.out.println("1. Listar todas las direcciones");
+            System.out.println("2. Buscar dirección por ID");
+            System.out.println("3. Crear nueva dirección");
+            System.out.println("4. Actualizar dirección");
+            System.out.println("5. Eliminar dirección");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("\n→ Seleccione una opción: ");
 
-        for (AddressDTO addr : addresses) {
-            System.out.printf("│ %-4d │ %-19s │ %-15s │ %-15s │ %-10s │ %-11s │%n",
-                    addr.getId() != null ? addr.getId() : 0,
-                    truncate(addr.getStreet(), 19),
-                    truncate(addr.getCity(), 15),
-                    truncate(addr.getState(), 15),
-                    truncate(addr.getZipCode(), 10),
-                    truncate(addr.getCountry(), 11)
-            );
+            try {
+                int option = Integer.parseInt(scanner.nextLine());
+
+                switch (option) {
+                    case 1:
+                        listAll();
+                        break;
+                    case 2:
+                        getById(scanner);
+                        break;
+                    case 3:
+                        create(scanner);
+                        break;
+                    case 4:
+                        update(scanner);
+                        break;
+                    case 5:
+                        delete(scanner);
+                        break;
+                    case 0:
+                        return;
+                    default:
+                        System.out.println("\n❌ Opción no válida");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("\n❌ Por favor, ingrese un número válido");
+            }
+        }
+    }
+
+    private void printAddressTable(List<AddressDTO> addresses) {
+        System.out.println("┌───────────┬────────────────┬────────────────┬─────────┐");
+        System.out.println("│    ID     │     CALLE     │   POBLACIÓN    │ C.P.    │");
+        System.out.println("├───────────┼────────────────┼────────────────┼─────────┤");
+
+        for (AddressDTO address : addresses) {
+            System.out.printf("│ %-9s │ %-12s │ %-12s │ %-7s │%n",
+                    address.getId(),
+                    truncateString(address.getStreet(), 12),
+                    truncateString(address.getCity(), 12),
+                    address.getZipCode());
         }
 
-        System.out.println("└──────┴─────────────────────┴─────────────────┴─────────────────┴────────────┴─────────────┘");
+        System.out.println("└───────────┴────────────────┴────────────────┴─────────┘");
     }
 
     private void printAddressDetails(AddressDTO address) {
-        System.out.println("┌────────────────────────────────────────┐");
-        System.out.println("│        DETALLES DE LA DIRECCIÓN       │");
-        System.out.println("├────────────────────────────────────────┤");
-        System.out.println("│ ID:         " + address.getId());
-        System.out.println("│ Calle:      " + address.getStreet());
-        System.out.println("│ Ciudad:     " + address.getCity());
-        System.out.println("│ Provincia:  " + address.getState());
-        System.out.println("│ CP:         " + address.getZipCode());
-        System.out.println("│ País:       " + address.getCountry());
-        System.out.println("└────────────────────────────────────────┘");
+        System.out.println("┌──────────────────────────────────────────┐");
+        System.out.println("│ DETALLES DE LA DIRECCIÓN                │");
+        System.out.println("├─────────────────┬────────────────────────┤");
+        System.out.printf("│ ID              │ %-20s │%n", address.getId());
+        System.out.printf("│ Calle           │ %-20s │%n", address.getStreet());
+        System.out.printf("│ Ciudad          │ %-20s │%n", address.getCity());
+        System.out.printf("│ Código Postal   │ %-20s │%n", address.getZipCode());
+        System.out.printf("│ Estado          │ %-20s │%n", address.getState());
+        System.out.printf("│ País            │ %-20s │%n", address.getCountry());
+        System.out.println("└─────────────────┴────────────────────────┘");
     }
 
-    private String truncate(String str, int length) {
+    private String truncateString(String str, int length) {
         if (str == null) return "";
         return str.length() > length ? str.substring(0, length - 3) + "..." : str;
     }

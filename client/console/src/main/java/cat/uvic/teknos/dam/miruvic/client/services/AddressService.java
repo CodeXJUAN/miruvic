@@ -225,7 +225,7 @@ public class AddressService {
 
     public void showMenu(ActivityAwareScanner scanner) {
         while (true) {
-            System.out.println("\n📍 MENU DE DIRECCIONES");
+            System.out.println("\n MENU DE DIRECCIONES");
             System.out.println("1. Listar todas las direcciones");
             System.out.println("2. Buscar dirección por ID");
             System.out.println("3. Crear nueva dirección");
@@ -256,10 +256,10 @@ public class AddressService {
                     case 0:
                         return;
                     default:
-                        System.out.println("\n❌ Opción no válida");
+                        System.out.println("\n Opción no válida");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\n❌ Por favor, ingrese un número válido");
+                System.out.println("\n Por favor, ingrese un número válido");
             }
         }
     }

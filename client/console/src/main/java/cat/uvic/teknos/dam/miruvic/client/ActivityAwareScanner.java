@@ -2,9 +2,6 @@ package cat.uvic.teknos.dam.miruvic.client;
 
 import java.util.Scanner;
 
-/**
- * Wrapper del Scanner que actualiza la actividad del cliente cada vez que se lee input.
- */
 public class ActivityAwareScanner {
     private final Scanner scanner;
     private final Runnable updateActivity;
@@ -15,7 +12,7 @@ public class ActivityAwareScanner {
     }
 
     public String nextLine() {
-        updateActivity.run(); // Actualizar actividad ANTES de leer
+        updateActivity.run();
         return scanner.nextLine();
     }
 

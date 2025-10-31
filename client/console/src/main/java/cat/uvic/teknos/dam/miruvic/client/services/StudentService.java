@@ -268,7 +268,7 @@ public class StudentService {
 
     public void showMenu(ActivityAwareScanner scanner) {
         while (true) {
-            System.out.println("\n👥 MENU DE ESTUDIANTES");
+            System.out.println("\n MENU DE ESTUDIANTES");
             System.out.println("1. Listar todos los estudiantes");
             System.out.println("2. Buscar estudiante por ID");
             System.out.println("3. Crear nuevo estudiante");
@@ -299,10 +299,10 @@ public class StudentService {
                     case 0:
                         return;
                     default:
-                        System.out.println("\n❌ Opción no válida");
+                        System.out.println("\n Opción no válida");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\n❌ Por favor, ingrese un número válido");
+                System.out.println("\n Por favor, ingrese un número válido");
             }
         }
     }

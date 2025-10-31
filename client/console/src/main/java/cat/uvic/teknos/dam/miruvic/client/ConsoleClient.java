@@ -28,18 +28,15 @@ public class ConsoleClient {
     private final StudentService studentService;
     private final RawHttp rawHttp = new RawHttp();
 
-    // Inactivity tracking
     private final Lock activityLock;
     private volatile long lastActivityTime;
     private final ScheduledExecutorService inactivityMonitor;
 
     public ConsoleClient() {
-        // Inactivity setup
         this.activityLock = new ReentrantLock();
         this.inactivityMonitor = Executors.newScheduledThreadPool(1);
-        updateActivity(); // Initial activity
+        updateActivity();
 
-        // Scanner con detección de actividad
         this.scanner = new ActivityAwareScanner(new Scanner(System.in), this::updateActivity);
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -71,7 +68,7 @@ public class ConsoleClient {
             try {
                 long inactiveTime = System.currentTimeMillis() - lastActivityTime;
                 if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
-                    System.out.println("\n⚠️ Inactivity detected. Disconnecting...");
+                    System.out.println("\n ⚠ Inactivity detected. Disconnecting...");
                     sendDisconnectAndExit();
                 }
             } finally {
@@ -120,20 +117,20 @@ public class ConsoleClient {
                         manageStudents();
                         break;
                     case 0:
-                        System.out.println("\n👋 ¡Hasta pronto!");
+                        System.out.println("\n ¡Hasta pronto!");
                         sendDisconnectAndExit();
                         return;
                     default:
-                        System.out.println("\n❌ Opción no válida");
+                        System.out.println("\n Opción no válida");
                 }
             } catch (Exception e) {
-                System.err.println("\n❌ Error: " + e.getMessage());
+                System.err.println("\n Error: " + e.getMessage());
             }
         }
     }
 
     private void showMenu() {
-        System.out.println("\n📋 MENÚ PRINCIPAL");
+        System.out.println("\n MENÚ PRINCIPAL");
         System.out.println("1. Gestionar direcciones");
         System.out.println("2. Gestionar estudiantes");
         System.out.println("0. Salir");
@@ -149,12 +146,12 @@ public class ConsoleClient {
     }
 
     private void manageAddresses() {
-        System.out.println("\n📍 GESTIÓN DE DIRECCIONES");
+        System.out.println("\n GESTIÓN DE DIRECCIONES");
         addressService.showMenu(scanner);
     }
 
     private void manageStudents() {
-        System.out.println("\n👥 GESTIÓN DE ESTUDIANTES");
+        System.out.println("\n GESTIÓN DE ESTUDIANTES");
         studentService.showMenu(scanner);
     }
 }

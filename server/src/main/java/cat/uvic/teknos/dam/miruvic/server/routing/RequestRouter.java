@@ -27,7 +27,6 @@ public record RequestRouter(
 
             logger.info("→ Routing: {} {}", method, path);
 
-            // Routing por recurso
             if (path.startsWith("/addresses")) {
                 return routeAddresses(request, path, method);
             }
@@ -36,7 +35,6 @@ public record RequestRouter(
                 return routeStudents(request, path, method);
             }
 
-            // Ruta de desconexión especial
             if (path.equals("/disconnect")) {
                 logger.info("Cliente solicitó desconexión");
                 return responseBuilder.success(200, "OK");

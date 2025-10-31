@@ -5,9 +5,6 @@ import rawhttp.core.RawHttpResponse;
 
 import java.nio.charset.StandardCharsets;
 
-/**
- * HttpResponseBuilder - Responsabilidad: Construir respuestas HTTP en formato correcto.
- */
 public record HttpResponseBuilder() {
 
     private static final RawHttp RAW_HTTP = new RawHttp();

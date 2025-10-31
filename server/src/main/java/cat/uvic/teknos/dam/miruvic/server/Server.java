@@ -70,7 +70,7 @@ public class Server {
         monitorService.scheduleAtFixedRate(() -> {
             clientLock.lock();
             try {
-                System.out.println("📊 Connected clients: " + activeClients.size());
+                System.out.println(" Connected clients: " + activeClients.size());
             } finally {
                 clientLock.unlock();
             }

@@ -1,6 +1,5 @@
 package cat.uvic.teknos.dam.miruvic.client.models;
 
-import cat.uvic.teknos.dam.miruvic.client.models.AddressDTO;
 public class StudentDTO {
     private Integer id;
     private String firstName;

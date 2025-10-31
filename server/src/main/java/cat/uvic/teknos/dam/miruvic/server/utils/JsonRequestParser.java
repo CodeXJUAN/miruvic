@@ -11,9 +11,6 @@ import rawhttp.core.RawHttpRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * JsonRequestParser - Responsabilidad: Parsear y serializar JSON.
- */
 public record JsonRequestParser(ObjectMapper objectMapper) {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonRequestParser.class);

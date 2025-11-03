@@ -28,7 +28,7 @@ public class ClientHandler {
                 try {
                     RawHttpRequest request = rawHttp.parseRequest(socket.getInputStream()).eagerly();
                     String clientId = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-                    System.out.println("  ← [" + clientId + "] " + request.getMethod() + " " + request.getUri().getPath());
+                    System.out.println(" <- [" + clientId + "] " + request.getMethod() + " " + request.getUri().getPath());
 
 
                     if (isDisconnectMessage(request)) {
@@ -38,11 +38,11 @@ public class ClientHandler {
 
                     RawHttpResponse<?> response = router.route(request);
                     response.writeTo(socket.getOutputStream());
-                    System.out.println("  → [" + clientId + "] " + response.getStatusCode() + " " + response.getStartLine().getReason());
+                    System.out.println(" -> [" + clientId + "] " + response.getStatusCode() + " " + response.getStartLine().getReason());
 
                 } catch (IOException e) {
                     if (!socket.isClosed()) {
-                        System.err.println("  ✗ [" + socket.getInetAddress().getHostAddress() + ":" + socket.getPort() + "] Error handling request: " + e.getMessage());
+                        System.err.println("  x [" + socket.getInetAddress().getHostAddress() + ":" + socket.getPort() + "] Error handling request: " + e.getMessage());
                     }
                     break; // Exit loop on error
                 }
@@ -58,27 +58,27 @@ public class ClientHandler {
 
     private void handleDisconnect() {
         String clientId = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
-        System.out.println("  ← [" + clientId + "] Received disconnect message.");
+        System.out.println("  <- [" + clientId + "] Received disconnect message.");
         try {
             // Enviar acknowledgement
             RawHttpResponse<?> ack = createAckResponse();
             ack.writeTo(socket.getOutputStream());
-            System.out.println("  → [" + clientId + "] Sent disconnect acknowledgement.");
+            System.out.println("  -> [" + clientId + "] Sent disconnect acknowledgement.");
 
             // Esperar 1 segundo
             Thread.sleep(1000);
 
         } catch (IOException e) {
-            System.err.println("  ✗ [" + clientId + "] Error sending disconnect ack: " + e.getMessage());
+            System.err.println("  x [" + clientId + "] Error sending disconnect ack: " + e.getMessage());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            System.err.println("  ✗ [" + clientId + "] Disconnect handling was interrupted.");
+            System.err.println("  x [" + clientId + "] Disconnect handling was interrupted.");
         } finally {
             try {
                 socket.close();
-                System.out.println("  ✓ [" + clientId + "] Connection closed after disconnect.");
+                System.out.println("  v [" + clientId + "] Connection closed after disconnect.");
             } catch (IOException e) {
-                System.err.println("  ✗ [" + clientId + "] Error closing socket after disconnect: " + e.getMessage());
+                System.err.println("  x [" + clientId + "] Error closing socket after disconnect: " + e.getMessage());
             }
         }
     }

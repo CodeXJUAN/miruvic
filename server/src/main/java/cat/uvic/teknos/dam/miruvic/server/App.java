@@ -18,36 +18,33 @@ public class App {
 
     public static void main(String[] args) {
         System.out.println("\n");
-        System.out.println("███╗   ███╗██╗██████╗ ██╗   ██╗██╗   ██╗██╗ ██████╗");
-        System.out.println("████╗ ████║██║██╔══██╗██║   ██║██║   ██║██║██╔════╝");
-        System.out.println("██╔████╔██║██║██████╔╝██║   ██║██║   ██║██║██║     ");
-        System.out.println("██║╚██╔╝██║██║██╔══██╗██║   ██║╚██╗ ██╔╝██║██║     ");
-        System.out.println("██║ ╚═╝ ██║██║██║  ██║╚██████╔╝ ╚████╔╝ ██║╚██████╗");
-        System.out.println("╚═╝     ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚═╝ ╚═════╝");
-        System.out.println("                    SERVER v1.0");
-        System.out.println();
+        System.out.println("--------------------------------");
+        System.out.println("   MIRUVIC APPLICATION SERVER   ");
+        System.out.println("--------------------------------");
+        System.out.println("Juan Manuel López    SERVER v1.0");
+        System.out.println("--------------------------------\n");
 
         Server server = null;
         JdbcRepositoryFactory repositoryFactory = null;
 
         try {
-            System.out.println("► Initializing database connection...");
+            System.out.println("> Initializing database connection...");
             repositoryFactory = new JdbcRepositoryFactory();
-            System.out.println("  ✓ Database connection established");
+            System.out.println("v Database connection established");
 
             AddressRepository addressRepository = repositoryFactory.getAddressRepository();
             StudentRepository studentRepository = repositoryFactory.getStudentRepository();
-            System.out.println("  ✓ Repositories loaded");
+            System.out.println("v Repositories loaded");
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            System.out.println("  ✓ JSON mapper configured");
+            System.out.println("v JSON mapper configured");
 
             ModelFactory modelFactory = new DefaultModelFactory();
             JsonRequestParser jsonParser = new JsonRequestParser(objectMapper);
             HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
             PathParser pathParser = new PathParser();
-            System.out.println("  ✓ Utility classes initialized");
+            System.out.println("v Utility classes initialized");
 
             AddressController addressController = new AddressController(
                     addressRepository,
@@ -65,7 +62,7 @@ public class App {
                     responseBuilder,
                     pathParser
             );
-            System.out.println("  ✓ Controllers initialized (Address, Student)");
+            System.out.println("v Controllers initialized (Address, Student)");
 
             RequestRouter router = new RequestRouter(
                     addressController,
@@ -73,28 +70,28 @@ public class App {
                     responseBuilder,
                     pathParser
             );
-            System.out.println("  ✓ Request router configured");
+            System.out.println("v Request router configured");
 
             final int PORT = 5000;
             server = new Server(PORT, router);
-            System.out.println("  ✓ Server instance created\n");
+            System.out.println("v Server instance created\n");
 
             final Server finalServer = server;
             final JdbcRepositoryFactory finalFactory = repositoryFactory;
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("\n\n► Shutdown signal received...");
+                System.out.println("\n\n > Shutdown signal received...");
                 if (finalServer != null) {
                     finalServer.shutdown();
                 }
                 if (finalFactory != null) {
                     try {
                         finalFactory.close();
-                        System.out.println("  ✓ Database connections closed");
+                        System.out.println("v Database connections closed");
                     } catch (Exception e) {
-                        System.err.println("  ✗ Error closing database: " + e.getMessage());
+                        System.err.println("x Error closing database: " + e.getMessage());
                     }
                 }
-                System.out.println("  ✓ Server shutdown complete\n");
+                System.out.println("v Server shutdown complete\n");
             }));
 
             server.start();

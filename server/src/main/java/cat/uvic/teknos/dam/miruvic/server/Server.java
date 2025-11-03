@@ -33,16 +33,16 @@ public class Server {
     public void start() {
         running = true;
 
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║     MIRUVIC SERVER STARTING...        ║");
-        System.out.println("╚════════════════════════════════════════╝");
+        System.out.println("--------------------------------------------");
+        System.out.println("--     MIRUVIC SERVER STARTING...         --");
+        System.out.println("--------------------------------------------\n");
 
         startClientMonitorDaemon();
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("✓ Server listening on port " + port);
-            System.out.println("✓ Waiting for client connections...");
-            System.out.println("✓ Press Ctrl+C to stop the server\n");
+            System.out.println("v Server listening on port " + port);
+            System.out.println("v Waiting for client connections...");
+            System.out.println("v Press Ctrl+C to stop the server\n");
 
             while (running) {
                 try {
@@ -58,7 +58,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            System.err.println("✗ FATAL: Could not start server on port " + port);
+            System.err.println("x FATAL: Could not start server on port " + port);
             System.err.println("  Reason: " + e.getMessage());
             System.err.println("  Tip: Make sure the port is not already in use");
         } finally {
@@ -75,7 +75,7 @@ public class Server {
                 clientLock.unlock();
             }
         }, 1, 1, TimeUnit.MINUTES);
-        System.out.println("✓ Client monitor daemon started.");
+        System.out.println("v Client monitor daemon started.");
     }
 
     private void handleClient(Socket clientSocket) {
@@ -93,7 +93,7 @@ public class Server {
             handler.handle();
         } finally {
             removeClient(clientId);
-            System.out.println("  ✓ [" + clientId + "] Connection closed\n");
+            System.out.println("v [" + clientId + "] Connection closed\n");
         }
     }
 
@@ -102,7 +102,7 @@ public class Server {
         try {
             ClientHandler handler = activeClients.remove(clientId);
             if (handler != null) {
-                System.out.println("✓ Client " + clientId + " removed from active clients");
+                System.out.println("v Client " + clientId + " removed from active clients");
             }
         } finally {
             clientLock.unlock();
@@ -111,9 +111,9 @@ public class Server {
 
     public void shutdown() {
         running = false;
-        System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║     SHUTTING DOWN SERVER...           ║");
-        System.out.println("╚════════════════════════════════════════╝");
+        System.out.println("\n-----------------------------------------");
+        System.out.println("--     SHUTTING DOWN SERVER...           --");
+        System.out.println("-------------------------------------------");
 
         monitorService.shutdown();
         executorService.shutdown();
@@ -131,7 +131,7 @@ public class Server {
             Thread.currentThread().interrupt();
         }
 
-        System.out.println("✓ Server shutdown complete");
+        System.out.println("v Server shutdown complete");
     }
 
     public int getPort() {

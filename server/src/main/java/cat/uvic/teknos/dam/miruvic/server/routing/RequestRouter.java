@@ -25,7 +25,7 @@ public record RequestRouter(
             String path = request.getUri().getPath();
             String method = request.getMethod();
 
-            logger.info("→ Routing: {} {}", method, path);
+            logger.info("-> Routing: {} {}", method, path);
 
             if (path.startsWith("/addresses")) {
                 return routeAddresses(request, path, method);

@@ -189,10 +189,10 @@ public class AddressService {
     }
 
     public void delete(ActivityAwareScanner scanner) {
-        System.out.print("\n🗑  Ingrese el ID de la dirección a eliminar: ");
+        System.out.print("\n->  Ingrese el ID de la dirección a eliminar: ");
         String id = scanner.nextLine().trim();
 
-        System.out.print("⚠ ¿Está seguro? (s/n): ");
+        System.out.print("!! ¿Está seguro? (s/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("s")) {
@@ -265,32 +265,32 @@ public class AddressService {
     }
 
     private void printAddressTable(List<AddressDTO> addresses) {
-        System.out.println("┌───────────┬────────────────┬────────────────┬─────────┐");
-        System.out.println("│    ID     │     CALLE     │   POBLACIÓN    │ C.P.    │");
-        System.out.println("├───────────┼────────────────┼────────────────┼─────────┤");
+        System.out.println("------------|-----------------|-----------------|------|");
+        System.out.println("|    ID     |     CALLE     |   POBLACIÓN    | C.P.    |");
+        System.out.println("|-----------|---------------|----------------|---------|");
 
         for (AddressDTO address : addresses) {
-            System.out.printf("│ %-9s │ %-12s │ %-12s │ %-7s │%n",
+            System.out.printf("| %-9s | %-12s | %-12s | %-7s |%n",
                     address.getId(),
                     truncateString(address.getStreet(), 12),
                     truncateString(address.getCity(), 12),
                     address.getZipCode());
         }
 
-        System.out.println("└───────────┴────────────────┴────────────────┴─────────┘");
+        System.out.println("|------------|-----------------|-----------------|------|");
     }
 
     private void printAddressDetails(AddressDTO address) {
-        System.out.println("┌──────────────────────────────────────────┐");
-        System.out.println("│ DETALLES DE LA DIRECCIÓN                │");
-        System.out.println("├─────────────────┬────────────────────────┤");
-        System.out.printf("│ ID              │ %-20s │%n", address.getId());
-        System.out.printf("│ Calle           │ %-20s │%n", address.getStreet());
-        System.out.printf("│ Ciudad          │ %-20s │%n", address.getCity());
-        System.out.printf("│ Código Postal   │ %-20s │%n", address.getZipCode());
-        System.out.printf("│ Estado          │ %-20s │%n", address.getState());
-        System.out.printf("│ País            │ %-20s │%n", address.getCountry());
-        System.out.println("└─────────────────┴────────────────────────┘");
+        System.out.println("-------------------------------------------");
+        System.out.println("│ DETALLES DE LA DIRECCIÓN                |");
+        System.out.println("|----------------|-------|-----------------|");
+        System.out.printf("| ID              | %-20s  |%n", address.getId());
+        System.out.printf("| Calle           | %-20s  |%n", address.getStreet());
+        System.out.printf("| Ciudad          | %-20s  |%n", address.getCity());
+        System.out.printf("| Código Postal   | %-20s  |%n", address.getZipCode());
+        System.out.printf("| Estado          | %-20s  |%n", address.getState());
+        System.out.printf("| País            | %-20s  |%n", address.getCountry());
+        System.out.println("|----------------|-----------------|-----------------|------|");
     }
 
     private String truncateString(String str, int length) {

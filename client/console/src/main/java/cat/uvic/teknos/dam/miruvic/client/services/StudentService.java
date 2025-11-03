@@ -150,7 +150,7 @@ public class StudentService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 201) {
-                System.out.println("✓ Estudiante creado exitosamente");
+                System.out.println("v Estudiante creado exitosamente");
             } else {
                 System.out.println("Error al crear: " + response.getStatusCode());
                 if (response.getBody().isPresent()) {
@@ -164,7 +164,7 @@ public class StudentService {
     }
 
     public void update(ActivityAwareScanner scanner) {
-        System.out.print("\n✏ Ingrese el ID del estudiante a actualizar: ");
+        System.out.print("\n-> Ingrese el ID del estudiante a actualizar: ");
         String id = scanner.nextLine().trim();
 
         System.out.print("Nuevo nombre: ");
@@ -308,37 +308,37 @@ public class StudentService {
     }
 
     private void printStudentTable(List<StudentDTO> students) {
-        System.out.println("┌───────────┬─────────────────┬──────────────┬────────────┐");
-        System.out.println("│    ID     │     NOMBRE     │  APELLIDOS   │   EMAIL    │");
-        System.out.println("├───────────┼─────────────────┼──────────────┼────────────┤");
+        System.out.println("----------------------------------------------------------");
+        System.out.println("|    ID     |     NOMBRE     |  APELLIDOS   |   EMAIL    -|");
+        System.out.println("|-----------|----------------|--------------|-------------|");
 
         for (StudentDTO student : students) {
-            System.out.printf("│ %-9s │ %-13s │ %-10s │ %-10s │%n",
+            System.out.printf("| %-9s | %-13s | %-10s | %-10s ||%n",
                     student.getId(),
                     truncateString(student.getFirstName(), 13),
                     truncateString(student.getLastName(), 10),
                     truncateString(student.getEmail(), 10));
         }
 
-        System.out.println("└───────────┴─────────────────┴──────────────┴────────────┘");
+        System.out.println("-----------|----------------|----------------|------------");
     }
 
     private void printStudentDetails(StudentDTO student) {
-        System.out.println("┌──────────────────────────────────────────┐");
-        System.out.println("│ DETALLES DEL ESTUDIANTE                 │");
-        System.out.println("├─────────────────┬────────────────────────┤");
-        System.out.printf("│ ID              │ %-20s │%n", student.getId());
-        System.out.printf("│ Nombre          │ %-20s │%n", student.getFirstName());
-        System.out.printf("│ Apellidos       │ %-20s │%n", student.getLastName());
-        System.out.printf("│ Email           │ %-20s │%n", student.getEmail());
-        System.out.printf("│ Teléfono        │ %-20s │%n", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
+        System.out.println("-------------------------------------------");
+        System.out.println("- DETALLES DEL ESTUDIANTE                 -");
+        System.out.println("-------------------------------------------");
+        System.out.printf("| ID              | %-20s |%n", student.getId());
+        System.out.printf("| Nombre          | %-20s |%n", student.getFirstName());
+        System.out.printf("| Apellidos       | %-20s |%n", student.getLastName());
+        System.out.printf("| Email           | %-20s |%n", student.getEmail());
+        System.out.printf("| Teléfono        | %-20s |%n", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
         if (student.getAddress() != null) {
-            System.out.printf("│ Dir. ID         │ %-20s │%n", student.getAddress().getId());
-            System.out.printf("│ Dirección       │ %-20s │%n",
+            System.out.printf("| Dir. ID         | %-20s |%n", student.getAddress().getId());
+            System.out.printf("| Dirección       | %-20s |%n",
                     truncateString(student.getAddress().getStreet() + ", " +
                             student.getAddress().getCity(), 20));
         }
-        System.out.println("└─────────────────┴────────────────────────┘");
+        System.out.println("|------------------┴----------------------|");
     }
 
     private String truncateString(String str, int length) {

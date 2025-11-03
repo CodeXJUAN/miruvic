@@ -68,7 +68,7 @@ public class ConsoleClient {
             try {
                 long inactiveTime = System.currentTimeMillis() - lastActivityTime;
                 if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
-                    System.out.println("\n ⚠ Inactivity detected. Disconnecting...");
+                    System.out.println("\n !! Inactivity detected. Disconnecting...");
                     sendDisconnectAndExit();
                 }
             } finally {
@@ -79,19 +79,19 @@ public class ConsoleClient {
 
     private void sendDisconnectAndExit() {
         try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT)) {
-            System.out.println("  → Sending disconnect message to server...");
+            System.out.println("  -> Sending disconnect message to server...");
             RawHttpRequest disconnectRequest = rawHttp.parseRequest("GET /disconnect HTTP/1.1\nHost: " + SERVER_HOST);
             disconnectRequest.writeTo(socket.getOutputStream());
 
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 200) {
-                System.out.println("  ✓ Server acknowledged disconnect.");
+                System.out.println("  v Server acknowledged disconnect.");
             } else {
-                System.out.println("  ✗ Server responded with status: " + response.getStatusCode());
+                System.out.println("  x  Server responded with status: " + response.getStatusCode());
             }
         } catch (IOException e) {
-            System.err.println("  ✗ Error during disconnect: " + e.getMessage());
+            System.err.println("  v Error during disconnect: " + e.getMessage());
         } finally {
             System.out.println("Exiting client.");
             inactivityMonitor.shutdownNow();
@@ -100,9 +100,9 @@ public class ConsoleClient {
     }
 
     public void run() {
-        System.out.println("\n╔════════════════════════════════════════╗");
-        System.out.println("║     MIRUVIC CLIENT v1.0               ║");
-        System.out.println("╚════════════════════════════════════════╝");
+        System.out.println("\n----------------------------------------");
+        System.out.println("--        MIRUVIC CLIENT v1.0           --");
+        System.out.println("------------------------------------------");
 
         while (true) {
             try {

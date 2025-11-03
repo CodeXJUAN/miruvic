@@ -58,7 +58,7 @@ public class StudentService {
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
@@ -84,13 +84,13 @@ public class StudentService {
                 System.out.println("\n✓ Estudiante encontrado:");
                 printStudentDetails(student);
             } else if (response.getStatusCode() == 404) {
-                System.out.println("No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontro un estudiante con ID " + id);
             } else {
                 System.out.println("Error: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
@@ -109,10 +109,10 @@ public class StudentService {
         System.out.print("Contraseña: ");
         String password = scanner.nextLine().trim();
 
-        System.out.print("Teléfono (opcional, Enter para omitir): ");
+        System.out.print("Telefono (opcional, Enter para omitir): ");
         String phone = scanner.nextLine().trim();
 
-        System.out.print("ID de dirección (opcional, Enter para omitir): ");
+        System.out.print("ID de direccion (opcional, Enter para omitir): ");
         String addressIdStr = scanner.nextLine().trim();
 
         try (Socket socket = new Socket(host, port)) {
@@ -132,7 +132,7 @@ public class StudentService {
                     int addressId = Integer.parseInt(addressIdStr);
                     jsonNode.put("addressId", addressId);
                 } catch (NumberFormatException e) {
-                    System.out.println(" ID de dirección inválido, se omitirá.");
+                    System.out.println(" ID de direccion invalido, se omitira.");
                 }
             }
 
@@ -159,7 +159,7 @@ public class StudentService {
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
@@ -179,10 +179,10 @@ public class StudentService {
         System.out.print("Nueva contraseña: ");
         String password = scanner.nextLine().trim();
 
-        System.out.print("Nuevo teléfono (opcional, Enter para omitir): ");
+        System.out.print("Nuevo telefono (opcional, Enter para omitir): ");
         String phone = scanner.nextLine().trim();
 
-        System.out.print("Nuevo ID de dirección (opcional, Enter para omitir): ");
+        System.out.print("Nuevo ID de direccion (opcional, Enter para omitir): ");
         String addressIdStr = scanner.nextLine().trim();
 
         try (Socket socket = new Socket(host, port)) {
@@ -201,7 +201,7 @@ public class StudentService {
                     int addressId = Integer.parseInt(addressIdStr);
                     jsonNode.put("addressId", addressId);
                 } catch (NumberFormatException e) {
-                    System.out.println("ID de dirección inválido, se omitirá.");
+                    System.out.println("ID de direccion invalido, se omitira.");
                 }
             }
 
@@ -221,13 +221,13 @@ public class StudentService {
             if (response.getStatusCode() == 204) {
                 System.out.println("Estudiante actualizado exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontro un estudiante con ID " + id);
             } else {
                 System.out.println("Error al actualizar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
@@ -235,11 +235,11 @@ public class StudentService {
         System.out.print("\n Ingrese el ID del estudiante a eliminar: ");
         String id = scanner.nextLine().trim();
 
-        System.out.print("¿Está seguro? (s/n): ");
+        System.out.print("¿Estas seguro? (s/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("s")) {
-            System.out.println("Operación cancelada.");
+            System.out.println("Operacion cancelada.");
             return;
         }
 
@@ -256,13 +256,13 @@ public class StudentService {
             if (response.getStatusCode() == 204) {
                 System.out.println("Estudiante eliminado exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println("No se encontró un estudiante con ID " + id);
+                System.out.println("No se encontro un estudiante con ID " + id);
             } else {
                 System.out.println("Error al eliminar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
@@ -274,8 +274,8 @@ public class StudentService {
             System.out.println("3. Crear nuevo estudiante");
             System.out.println("4. Actualizar estudiante");
             System.out.println("5. Eliminar estudiante");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("\n→ Seleccione una opción: ");
+            System.out.println("0. Volver al menu principal");
+            System.out.print("\n-> Seleccione una opcion: ");
 
             try {
                 int option = Integer.parseInt(scanner.nextLine());
@@ -299,10 +299,10 @@ public class StudentService {
                     case 0:
                         return;
                     default:
-                        System.out.println("\n Opción no válida");
+                        System.out.println("\n Opcion no valida");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\n Por favor, ingrese un número válido");
+                System.out.println("\n Por favor, ingrese un numero valido");
             }
         }
     }
@@ -331,10 +331,10 @@ public class StudentService {
         System.out.printf("| Nombre          | %-20s |%n", student.getFirstName());
         System.out.printf("| Apellidos       | %-20s |%n", student.getLastName());
         System.out.printf("| Email           | %-20s |%n", student.getEmail());
-        System.out.printf("| Teléfono        | %-20s |%n", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
+        System.out.printf("| Telefono        | %-20s |%n", student.getPhoneNumber() != null ? student.getPhoneNumber() : "N/A");
         if (student.getAddress() != null) {
             System.out.printf("| Dir. ID         | %-20s |%n", student.getAddress().getId());
-            System.out.printf("| Dirección       | %-20s |%n",
+            System.out.printf("| Direccion       | %-20s |%n",
                     truncateString(student.getAddress().getStreet() + ", " +
                             student.getAddress().getCity(), 20));
         }

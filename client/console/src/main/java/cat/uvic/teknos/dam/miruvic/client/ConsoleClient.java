@@ -121,7 +121,7 @@ public class ConsoleClient {
                         sendDisconnectAndExit();
                         return;
                     default:
-                        System.out.println("\n Opción no válida");
+                        System.out.println("\n Opcion no valida");
                 }
             } catch (Exception e) {
                 System.err.println("\n Error: " + e.getMessage());
@@ -130,11 +130,11 @@ public class ConsoleClient {
     }
 
     private void showMenu() {
-        System.out.println("\n MENÚ PRINCIPAL");
+        System.out.println("\n MENU PRINCIPAL");
         System.out.println("1. Gestionar direcciones");
         System.out.println("2. Gestionar estudiantes");
         System.out.println("0. Salir");
-        System.out.print("\n→ Seleccione una opción: ");
+        System.out.print("\n-> Seleccione una opcion: ");
     }
 
     private int readOption() {
@@ -146,12 +146,12 @@ public class ConsoleClient {
     }
 
     private void manageAddresses() {
-        System.out.println("\n GESTIÓN DE DIRECCIONES");
+        System.out.println("\n GESTION DE DIRECCIONES");
         addressService.showMenu(scanner);
     }
 
     private void manageStudents() {
-        System.out.println("\n GESTIÓN DE ESTUDIANTES");
+        System.out.println("\n GESTION DE ESTUDIANTES");
         studentService.showMenu(scanner);
     }
 }

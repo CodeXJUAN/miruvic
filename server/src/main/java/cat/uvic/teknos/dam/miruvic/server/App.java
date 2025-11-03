@@ -21,7 +21,7 @@ public class App {
         System.out.println("--------------------------------");
         System.out.println("   MIRUVIC APPLICATION SERVER   ");
         System.out.println("--------------------------------");
-        System.out.println("Juan Manuel López    SERVER v1.0");
+        System.out.println("Juan Manuel Lopez    SERVER v1.0");
         System.out.println("--------------------------------\n");
 
         Server server = null;

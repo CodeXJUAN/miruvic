@@ -59,12 +59,12 @@ public class AddressService {
             }
 
         } catch (IOException e) {
-            System.out.println("Error de conexión: " + e.getMessage());
+            System.out.println("Error de conexion: " + e.getMessage());
         }
     }
 
     public void getById(ActivityAwareScanner scanner) {
-        System.out.print("\n Ingrese el ID de la dirección: ");
+        System.out.print("\n Ingrese el ID de la direccion: ");
         String id = scanner.nextLine().trim();
 
         try (Socket socket = new Socket(host, port)) {
@@ -82,21 +82,21 @@ public class AddressService {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
                 AddressDTO address = objectMapper.readValue(json, AddressDTO.class);
 
-                System.out.println("\n Dirección encontrada:");
+                System.out.println("\n Direccion encontrada:");
                 printAddressDetails(address);
             } else if (response.getStatusCode() == 404) {
-                System.out.println(" No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontro una direccion con ID " + id);
             } else {
                 System.out.println(" Error: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println(" Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexion: " + e.getMessage());
         }
     }
 
     public void create(ActivityAwareScanner scanner) {
-        System.out.println("\n Crear nueva dirección");
+        System.out.println("\n Crear nueva direccion");
 
         AddressDTO address = new AddressDTO();
 
@@ -109,10 +109,10 @@ public class AddressService {
         System.out.print("Provincia/Estado: ");
         address.setState(scanner.nextLine().trim());
 
-        System.out.print("Código Postal: ");
+        System.out.print("Codigo Postal: ");
         address.setZipCode(scanner.nextLine().trim());
 
-        System.out.print("País: ");
+        System.out.print("Pais: ");
         address.setCountry(scanner.nextLine().trim());
 
         try (Socket socket = new Socket(host, port)) {
@@ -130,18 +130,18 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 201) {
-                System.out.println(" Dirección creada exitosamente");
+                System.out.println(" Direccion creada exitosamente");
             } else {
                 System.out.println(" Error al crear: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println(" Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexion: " + e.getMessage());
         }
     }
 
     public void update(ActivityAwareScanner scanner) {
-        System.out.print("\n Ingrese el ID de la dirección a actualizar: ");
+        System.out.print("\n Ingrese el ID de la direccion a actualizar: ");
         String id = scanner.nextLine().trim();
 
         AddressDTO address = new AddressDTO();
@@ -155,10 +155,10 @@ public class AddressService {
         System.out.print("Nueva provincia/estado: ");
         address.setState(scanner.nextLine().trim());
 
-        System.out.print("Nuevo código postal: ");
+        System.out.print("Nuevo codigo postal: ");
         address.setZipCode(scanner.nextLine().trim());
 
-        System.out.print("Nuevo país: ");
+        System.out.print("Nuevo pais: ");
         address.setCountry(scanner.nextLine().trim());
 
         try (Socket socket = new Socket(host, port)) {
@@ -176,27 +176,27 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println(" Dirección actualizada exitosamente");
+                System.out.println(" Direccion actualizada exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println(" No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontro una direccion con ID " + id);
             } else {
                 System.out.println(" Error al actualizar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println(" Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexion: " + e.getMessage());
         }
     }
 
     public void delete(ActivityAwareScanner scanner) {
-        System.out.print("\n->  Ingrese el ID de la dirección a eliminar: ");
+        System.out.print("\n->  Ingrese el ID de la direccion a eliminar: ");
         String id = scanner.nextLine().trim();
 
-        System.out.print("!! ¿Está seguro? (s/n): ");
+        System.out.print("!! ¿Estas seguro? (s/n): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("s")) {
-            System.out.println("Operación cancelada.");
+            System.out.println("Operacion cancelada.");
             return;
         }
 
@@ -211,15 +211,15 @@ public class AddressService {
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
 
             if (response.getStatusCode() == 204) {
-                System.out.println(" Dirección eliminada exitosamente");
+                System.out.println(" Direccion eliminada exitosamente");
             } else if (response.getStatusCode() == 404) {
-                System.out.println(" No se encontró una dirección con ID " + id);
+                System.out.println(" No se encontro una direccion con ID " + id);
             } else {
                 System.out.println(" Error al eliminar: " + response.getStatusCode());
             }
 
         } catch (IOException e) {
-            System.out.println(" Error de conexión: " + e.getMessage());
+            System.out.println(" Error de conexion: " + e.getMessage());
         }
     }
 
@@ -227,12 +227,12 @@ public class AddressService {
         while (true) {
             System.out.println("\n MENU DE DIRECCIONES");
             System.out.println("1. Listar todas las direcciones");
-            System.out.println("2. Buscar dirección por ID");
-            System.out.println("3. Crear nueva dirección");
-            System.out.println("4. Actualizar dirección");
-            System.out.println("5. Eliminar dirección");
-            System.out.println("0. Volver al menú principal");
-            System.out.print("\n→ Seleccione una opción: ");
+            System.out.println("2. Buscar direccion por ID");
+            System.out.println("3. Crear nueva direccion");
+            System.out.println("4. Actualizar direccion");
+            System.out.println("5. Eliminar direccion");
+            System.out.println("0. Volver al menu principal");
+            System.out.print("\n-> Seleccione una opcion: ");
 
             try {
                 int option = Integer.parseInt(scanner.nextLine());
@@ -256,17 +256,17 @@ public class AddressService {
                     case 0:
                         return;
                     default:
-                        System.out.println("\n Opción no válida");
+                        System.out.println("\n Opcion no valida");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\n Por favor, ingrese un número válido");
+                System.out.println("\n Por favor, ingrese un numero valido");
             }
         }
     }
 
     private void printAddressTable(List<AddressDTO> addresses) {
         System.out.println("------------|-----------------|-----------------|------|");
-        System.out.println("|    ID     |     CALLE     |   POBLACIÓN    | C.P.    |");
+        System.out.println("|    ID     |     CALLE     |   POBLACION    | C.P.    |");
         System.out.println("|-----------|---------------|----------------|---------|");
 
         for (AddressDTO address : addresses) {
@@ -282,14 +282,14 @@ public class AddressService {
 
     private void printAddressDetails(AddressDTO address) {
         System.out.println("-------------------------------------------");
-        System.out.println("│ DETALLES DE LA DIRECCIÓN                |");
+        System.out.println("│ DETALLES DE LA DIRECCION                |");
         System.out.println("|----------------|-------|-----------------|");
         System.out.printf("| ID              | %-20s  |%n", address.getId());
         System.out.printf("| Calle           | %-20s  |%n", address.getStreet());
         System.out.printf("| Ciudad          | %-20s  |%n", address.getCity());
-        System.out.printf("| Código Postal   | %-20s  |%n", address.getZipCode());
+        System.out.printf("| Codigo Postal   | %-20s  |%n", address.getZipCode());
         System.out.printf("| Estado          | %-20s  |%n", address.getState());
-        System.out.printf("| País            | %-20s  |%n", address.getCountry());
+        System.out.printf("| Pais            | %-20s  |%n", address.getCountry());
         System.out.println("|----------------|-----------------|-----------------|------|");
     }
 

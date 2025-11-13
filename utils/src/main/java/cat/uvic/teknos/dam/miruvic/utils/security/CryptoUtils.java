@@ -23,7 +23,7 @@ public class CryptoUtils {
         this.salt = props.getProperty(SALT_KEY, "");
     }
     
-    // Constructor for testing with custom properties
+
     CryptoUtils(String algorithm, String salt) {
         this.algorithm = algorithm;
         this.salt = salt;
@@ -42,31 +42,18 @@ public class CryptoUtils {
         }
         return props;
     }
-    
-    /**
-     * Hash a plain text string using the configured algorithm and salt
-     * @param plainText the text to hash
-     * @return hexadecimal representation of the hash
-     * @throws IllegalArgumentException if plainText is null
-     */
+
     public String hash(String plainText) {
         if (plainText == null) {
             throw new IllegalArgumentException("Plain text cannot be null");
         }
-        
-        // Combine salt with plain text
+
         String saltedText = salt + plainText;
         byte[] bytes = saltedText.getBytes(StandardCharsets.UTF_8);
         
         return hash(bytes);
     }
-    
-    /**
-     * Hash a byte array using the configured algorithm
-     * @param bytes the bytes to hash
-     * @return hexadecimal representation of the hash
-     * @throws IllegalArgumentException if bytes is null
-     */
+
     public String hash(byte[] bytes) {
         if (bytes == null) {
             throw new IllegalArgumentException("Bytes cannot be null");
@@ -80,13 +67,7 @@ public class CryptoUtils {
             throw new RuntimeException("Hashing algorithm not available: " + algorithm, e);
         }
     }
-    
-    /**
-     * Verify if a plain text matches a given hash
-     * @param plainText the text to verify
-     * @param expectedHash the expected hash value
-     * @return true if the hash matches
-     */
+
     public boolean verify(String plainText, String expectedHash) {
         String computedHash = hash(plainText);
         return computedHash.equals(expectedHash);

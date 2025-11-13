@@ -9,3 +9,7 @@ src/ui/commands/initCommand.js.map
 /node_modules/*
 /package.json
 /package-lock.json
+
+# Ignore test directories for jdbc and jpa
+jdbc/src/test
+jpa/src/test

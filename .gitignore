@@ -5,3 +5,7 @@
 build
 
 .idea
+src/ui/commands/initCommand.js.map
+/node_modules/*
+/package.json
+/package-lock.json

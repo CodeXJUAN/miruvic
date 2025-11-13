@@ -8,6 +8,7 @@ import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.factories.DefaultModelFactory;
 import cat.uvic.teknos.dam.miruvic.server.factories.ModelFactory;
 import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
+import cat.uvic.teknos.dam.miruvic.server.security.HashValidationInterceptor;
 import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
 import cat.uvic.teknos.dam.miruvic.server.utils.JsonRequestParser;
 import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
@@ -44,6 +45,7 @@ public class App {
             JsonRequestParser jsonParser = new JsonRequestParser(objectMapper);
             HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
             PathParser pathParser = new PathParser();
+            HashValidationInterceptor hashValidationInterceptor = new HashValidationInterceptor();
             System.out.println("v Utility classes initialized");
 
             AddressController addressController = new AddressController(
@@ -68,7 +70,8 @@ public class App {
                     addressController,
                     studentController,
                     responseBuilder,
-                    pathParser
+                    pathParser,
+                    hashValidationInterceptor
             );
             System.out.println("v Request router configured");
 

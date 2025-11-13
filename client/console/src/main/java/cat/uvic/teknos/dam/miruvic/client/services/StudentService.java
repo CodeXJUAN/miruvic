@@ -2,6 +2,8 @@ package cat.uvic.teknos.dam.miruvic.client.services;
 
 import cat.uvic.teknos.dam.miruvic.client.ActivityAwareScanner;
 import cat.uvic.teknos.dam.miruvic.client.models.StudentDTO;
+import cat.uvic.teknos.dam.miruvic.utils.security.CryptoUtils;
+import cat.uvic.teknos.dam.miruvic.utils.security.SecurityConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import rawhttp.core.RawHttp;
@@ -21,12 +23,14 @@ public class StudentService {
     private final int port;
     private final ObjectMapper objectMapper;
     private final RawHttp rawHttp;
+    private final CryptoUtils cryptoUtils;
 
     public StudentService(String host, int port, ObjectMapper objectMapper) {
         this.host = host;
         this.port = port;
         this.objectMapper = objectMapper;
         this.rawHttp = new RawHttp();
+        this.cryptoUtils = new CryptoUtils();
     }
 
     public void listAll() {
@@ -42,6 +46,7 @@ public class StudentService {
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
@@ -76,6 +81,7 @@ public class StudentService {
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
@@ -137,17 +143,20 @@ public class StudentService {
             }
 
             String json = objectMapper.writeValueAsString(jsonNode);
+            String hash = cryptoUtils.hash(json);
 
             RawHttpRequest request = rawHttp.parseRequest(
                     "POST /students HTTP/1.1\r\n" +
                             "Host: " + host + "\r\n" +
                             "Content-Type: application/json\r\n" +
+                            SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                             "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                             "\r\n"
             ).withBody(new StringBody(json));
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 201) {
                 System.out.println("v Estudiante creado exitosamente");
@@ -206,17 +215,20 @@ public class StudentService {
             }
 
             String json = objectMapper.writeValueAsString(jsonNode);
+            String hash = cryptoUtils.hash(json);
 
             RawHttpRequest request = rawHttp.parseRequest(
                     "PUT /students/" + id + " HTTP/1.1\r\n" +
                             "Host: " + host + "\r\n" +
                             "Content-Type: application/json\r\n" +
+                            SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                             "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                             "\r\n"
             ).withBody(new StringBody(json));
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 204) {
                 System.out.println("Estudiante actualizado exitosamente");
@@ -344,5 +356,27 @@ public class StudentService {
     private String truncateString(String str, int length) {
         if (str == null) return "";
         return str.length() > length ? str.substring(0, length - 3) + "..." : str;
+    }
+
+    private void validateResponseHash(RawHttpResponse<?> response) {
+        if (!response.getBody().isPresent()) {
+            return; // No body to validate
+        }
+        
+        String receivedHash = response.getHeaders()
+            .getFirst(SecurityConstants.HASH_HEADER)
+            .orElse(null);
+        
+        if (receivedHash == null) {
+            throw new RuntimeException("Server response missing hash header");
+        }
+        
+        String body = response.getBody().get()
+            .decodeBodyToString(StandardCharsets.UTF_8);
+        String computedHash = cryptoUtils.hash(body);
+        
+        if (!computedHash.equals(receivedHash)) {
+            throw new RuntimeException("Response hash validation failed");
+        }
     }
 }

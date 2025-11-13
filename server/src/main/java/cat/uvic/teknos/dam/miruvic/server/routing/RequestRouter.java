@@ -5,6 +5,7 @@ import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.HttpException;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.MethodNotAllowedException;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.NotFoundException;
+import cat.uvic.teknos.dam.miruvic.server.security.HashValidationInterceptor;
 import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
 import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
 import org.slf4j.Logger;
@@ -16,11 +17,17 @@ public record RequestRouter(
         AddressController addressController,
         StudentController studentController,
         HttpResponseBuilder responseBuilder,
-        PathParser pathParser) {
+        PathParser pathParser,
+        HashValidationInterceptor hashValidator) {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestRouter.class);
 
     public RawHttpResponse<?> route(RawHttpRequest request) {
+        // Validate hash before processing
+        if (!hashValidator.validateRequest(request)) {
+            logger.warn("Hash validation failed for request");
+            return responseBuilder.error(400, "Invalid message hash");
+        }
         try {
             String path = request.getUri().getPath();
             String method = request.getMethod();

@@ -1,5 +1,7 @@
 package cat.uvic.teknos.dam.miruvic.server.utils;
 
+import cat.uvic.teknos.dam.miruvic.utils.security.CryptoUtils;
+import cat.uvic.teknos.dam.miruvic.utils.security.SecurityConstants;
 import rawhttp.core.RawHttp;
 import rawhttp.core.RawHttpResponse;
 
@@ -8,11 +10,14 @@ import java.nio.charset.StandardCharsets;
 public record HttpResponseBuilder() {
 
     private static final RawHttp RAW_HTTP = new RawHttp();
+    private static final CryptoUtils CRYPTO_UTILS = new CryptoUtils();
 
     public RawHttpResponse<?> ok(String jsonBody) {
+        String hash = CRYPTO_UTILS.hash(jsonBody);
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 200 OK\r\n" +
                         "Content-Type: application/json\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                         "Content-Length: " + jsonBody.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                         "\r\n" +
                         jsonBody
@@ -47,10 +52,12 @@ public record HttpResponseBuilder() {
     public RawHttpResponse<?> error(int statusCode, String message) {
         String statusText = getStatusText(statusCode);
         String body = "{\"error\": \"" + escapeJson(message) + "\"}";
+        String hash = CRYPTO_UTILS.hash(body);
 
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
                         "Content-Type: application/json\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                         "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                         "\r\n" +
                         body
@@ -60,10 +67,12 @@ public record HttpResponseBuilder() {
     public RawHttpResponse<?> success(int statusCode, String message) {
         String statusText = getStatusText(statusCode);
         String body = "{\"message\": \"" + escapeJson(message) + "\"}";
+        String hash = CRYPTO_UTILS.hash(body);
 
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
                         "Content-Type: application/json\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                         "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                         "\r\n" +
                         body

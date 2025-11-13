@@ -13,6 +13,7 @@ application {
 }
 
 dependencies {
+    implementation(project(":utils"))
     implementation(project(":jdbc"))
     implementation(project(":jpa"))
     implementation(project(":model"))
@@ -26,4 +27,5 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2")
     implementation("org.slf4j:slf4j-simple:1.7.36")
+    testImplementation("org.mockito:mockito-core:5.11.0")
 }

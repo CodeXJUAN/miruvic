@@ -2,6 +2,8 @@ package cat.uvic.teknos.dam.miruvic.client.services;
 
 import cat.uvic.teknos.dam.miruvic.client.ActivityAwareScanner;
 import cat.uvic.teknos.dam.miruvic.client.models.AddressDTO;
+import cat.uvic.teknos.dam.miruvic.utils.security.CryptoUtils;
+import cat.uvic.teknos.dam.miruvic.utils.security.SecurityConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import rawhttp.core.RawHttp;
 import rawhttp.core.RawHttpRequest;
@@ -20,12 +22,14 @@ public class AddressService {
     private final int port;
     private final ObjectMapper objectMapper;
     private final RawHttp rawHttp;
+    private final CryptoUtils cryptoUtils;
 
     public AddressService(String host, int port, ObjectMapper objectMapper) {
         this.host = host;
         this.port = port;
         this.objectMapper = objectMapper;
         this.rawHttp = new RawHttp();
+        this.cryptoUtils = new CryptoUtils();
     }
 
     public void listAll() {
@@ -43,6 +47,7 @@ public class AddressService {
             request.writeTo(socket.getOutputStream());
 
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
@@ -77,6 +82,7 @@ public class AddressService {
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 200 && response.getBody().isPresent()) {
                 String json = response.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
@@ -117,17 +123,20 @@ public class AddressService {
 
         try (Socket socket = new Socket(host, port)) {
             String json = objectMapper.writeValueAsString(address);
+            String hash = cryptoUtils.hash(json);
 
             RawHttpRequest request = rawHttp.parseRequest(
                     "POST /addresses HTTP/1.1\r\n" +
                             "Host: " + host + "\r\n" +
                             "Content-Type: application/json\r\n" +
+                            SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                             "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                             "\r\n"
             ).withBody(new StringBody(json));
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 201) {
                 System.out.println(" Direccion creada exitosamente");
@@ -163,17 +172,20 @@ public class AddressService {
 
         try (Socket socket = new Socket(host, port)) {
             String json = objectMapper.writeValueAsString(address);
+            String hash = cryptoUtils.hash(json);
 
             RawHttpRequest request = rawHttp.parseRequest(
                     "PUT /addresses/" + id + " HTTP/1.1\r\n" +
                             "Host: " + host + "\r\n" +
                             "Content-Type: application/json\r\n" +
+                            SecurityConstants.HASH_HEADER + ": " + hash + "\r\n" +
                             "Content-Length: " + json.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                             "\r\n"
             ).withBody(new StringBody(json));
 
             request.writeTo(socket.getOutputStream());
             RawHttpResponse<?> response = rawHttp.parseResponse(socket.getInputStream()).eagerly();
+            validateResponseHash(response);
 
             if (response.getStatusCode() == 204) {
                 System.out.println(" Direccion actualizada exitosamente");
@@ -296,5 +308,27 @@ public class AddressService {
     private String truncateString(String str, int length) {
         if (str == null) return "";
         return str.length() > length ? str.substring(0, length - 3) + "..." : str;
+    }
+
+    private void validateResponseHash(RawHttpResponse<?> response) {
+        if (!response.getBody().isPresent()) {
+            return; // No body to validate
+        }
+        
+        String receivedHash = response.getHeaders()
+            .getFirst(SecurityConstants.HASH_HEADER)
+            .orElse(null);
+        
+        if (receivedHash == null) {
+            throw new RuntimeException("Server response missing hash header");
+        }
+        
+        String body = response.getBody().get()
+            .decodeBodyToString(StandardCharsets.UTF_8);
+        String computedHash = cryptoUtils.hash(body);
+        
+        if (!computedHash.equals(receivedHash)) {
+            throw new RuntimeException("Response hash validation failed");
+        }
     }
 }

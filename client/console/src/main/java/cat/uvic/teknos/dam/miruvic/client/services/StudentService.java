@@ -267,10 +267,17 @@ public class StudentService {
 
             if (response.getStatusCode() == 204) {
                 System.out.println("Estudiante eliminado exitosamente");
-            } else if (response.getStatusCode() == 404) {
-                System.out.println("No se encontro un estudiante con ID " + id);
             } else {
-                System.out.println("Error al eliminar: " + response.getStatusCode());
+                // Validar hash si hay body de error
+                if (response.getBody().isPresent()) {
+                    validateResponseHash(response);
+                }
+                
+                if (response.getStatusCode() == 404) {
+                    System.out.println("No se encontro un estudiante con ID " + id);
+                } else {
+                    System.out.println("Error al eliminar: " + response.getStatusCode());
+                }
             }
 
         } catch (IOException e) {
@@ -371,12 +378,16 @@ public class StudentService {
             throw new RuntimeException("Server response missing hash header");
         }
         
-        String body = response.getBody().get()
-            .decodeBodyToString(StandardCharsets.UTF_8);
-        String computedHash = cryptoUtils.hash(body);
-        
-        if (!computedHash.equals(receivedHash)) {
-            throw new RuntimeException("Response hash validation failed");
+        try {
+            String body = response.getBody().get()
+                .decodeBodyToString(StandardCharsets.UTF_8);
+            String computedHash = cryptoUtils.hash(body);
+            
+            if (!computedHash.equals(receivedHash)) {
+                throw new RuntimeException("Response hash validation failed");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error decoding response body for hash validation", e);
         }
     }
 }

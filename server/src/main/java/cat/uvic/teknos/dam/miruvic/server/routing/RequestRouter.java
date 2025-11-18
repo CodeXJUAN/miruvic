@@ -28,6 +28,7 @@ public record RequestRouter(
             logger.warn("Hash validation failed for request");
             return responseBuilder.error(400, "Invalid message hash");
         }
+        logger.info("Hash validation successful for request");
         try {
             String path = request.getUri().getPath();
             String method = request.getMethod();

@@ -11,5 +11,5 @@ src/ui/commands/initCommand.js.map
 /package-lock.json
 
 # Ignore test directories for jdbc and jpa
-jdbc/src/test
-jpa/src/test
+jdbc/src/test/
+jpa/src/test/

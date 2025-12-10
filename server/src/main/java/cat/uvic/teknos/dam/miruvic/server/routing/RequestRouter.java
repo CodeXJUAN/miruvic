@@ -1,6 +1,7 @@
 package cat.uvic.teknos.dam.miruvic.server.routing;
 
 import cat.uvic.teknos.dam.miruvic.server.controllers.AddressController;
+import cat.uvic.teknos.dam.miruvic.server.controllers.KeyController;
 import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.HttpException;
 import cat.uvic.teknos.dam.miruvic.server.exceptions.MethodNotAllowedException;
@@ -16,6 +17,7 @@ import rawhttp.core.RawHttpResponse;
 public record RequestRouter(
         AddressController addressController,
         StudentController studentController,
+        KeyController keyController,
         HttpResponseBuilder responseBuilder,
         PathParser pathParser,
         HashValidationInterceptor hashValidator) {
@@ -23,17 +25,18 @@ public record RequestRouter(
     private static final Logger logger = LoggerFactory.getLogger(RequestRouter.class);
 
     public RawHttpResponse<?> route(RawHttpRequest request) {
-        // Validate hash before processing
-        if (!hashValidator.validateRequest(request)) {
-            logger.warn("Hash validation failed for request");
-            return responseBuilder.error(400, "Invalid message hash");
-        }
-        logger.info("Hash validation successful for request");
         try {
+            hashValidator.validateRequest(request);
+            logger.info("Hash validation successful for request");
+
             String path = request.getUri().getPath();
             String method = request.getMethod();
 
             logger.info("-> Routing: {} {}", method, path);
+
+            if (path.startsWith("/keys/")) {
+                return routeKeys(request, path, method);
+            }
 
             if (path.startsWith("/addresses")) {
                 return routeAddresses(request, path, method);
@@ -51,13 +54,30 @@ public record RequestRouter(
             throw new NotFoundException("Endpoint not found: " + path);
 
         } catch (HttpException e) {
-            logger.warn("HTTP Exception: {} - {}", e.getStatusCode(), e.getMessage());
+            if (e.getStatusCode() == 400 && e.getMessage().contains("hash")) {
+                logger.warn("Hash validation failed for request");
+            } else {
+                logger.warn("HTTP Exception: {} - {}", e.getStatusCode(), e.getMessage());
+            }
             return responseBuilder.error(e.getStatusCode(), e.getMessage());
 
         } catch (Exception e) {
             logger.error("Unexpected error routing request", e);
             return responseBuilder.error(500, "Internal server error: " + e.getMessage());
         }
+    }
+
+    private RawHttpResponse<?> routeKeys(RawHttpRequest request, String path, String method) {
+        if (!method.equals("GET")) {
+            throw new MethodNotAllowedException("Method " + method + " not allowed for " + path);
+        }
+
+        if (!path.matches("^/keys/client\\d+$")) {
+            throw new NotFoundException("Invalid key endpoint format");
+        }
+
+        String clientNumber = path.replaceFirst("^/keys/client(\\d+)$", "$1");
+        return keyController.initializeSession(request, clientNumber);
     }
 
     private RawHttpResponse<?> routeAddresses(RawHttpRequest request, String path, String method) {

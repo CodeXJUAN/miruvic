@@ -79,12 +79,9 @@ public class StudentController {
         }
 
         JsonNode jsonNode = jsonParser.parseRequestBody(request);
+        populateStudentFromJson(existingStudent, jsonNode);
 
-        Student updatedStudent = modelFactory.createStudent();
-        updatedStudent.setId(id);
-        populateStudentFromJson(updatedStudent, jsonNode);
-
-        studentRepository.save(updatedStudent);
+        studentRepository.save(existingStudent);
 
         return responseBuilder.noContent();
     }
@@ -123,15 +120,18 @@ public class StudentController {
             student.setPhoneNumber(jsonNode.get("phoneNumber").asText());
         }
 
-        if (jsonNode.has("addressId") && !jsonNode.get("addressId").isNull()) {
-            int addressId = jsonNode.get("addressId").asInt();
-            Address address = addressRepository.get(addressId);
+        if (jsonNode.has("addressId")) {
+            if (jsonNode.get("addressId").isNull()) {
+                student.setAddress(null);
+            } else {
+                int addressId = jsonNode.get("addressId").asInt();
+                Address address = addressRepository.get(addressId);
 
-            if (address == null) {
-                throw new BadRequestException("Address with ID " + addressId + " not found");
+                if (address == null) {
+                    throw new BadRequestException("Address with ID " + addressId + " not found");
+                }
+                student.setAddress(address);
             }
-
-            student.setAddress(address);
         }
     }
 }

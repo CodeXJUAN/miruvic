@@ -27,6 +27,7 @@ public record HttpResponseBuilder() {
     public RawHttpResponse<?> created() {
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 201 Created\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + CRYPTO_UTILS.hash("") + "\r\n" +
                         "Content-Length: 0\r\n" +
                         "\r\n"
         );
@@ -36,6 +37,7 @@ public record HttpResponseBuilder() {
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 201 Created\r\n" +
                         "Location: " + location + "\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + CRYPTO_UTILS.hash("") + "\r\n" +
                         "Content-Length: 0\r\n" +
                         "\r\n"
         );
@@ -44,6 +46,7 @@ public record HttpResponseBuilder() {
     public RawHttpResponse<?> noContent() {
         return RAW_HTTP.parseResponse(
                 "HTTP/1.1 204 No Content\r\n" +
+                        SecurityConstants.HASH_HEADER + ": " + CRYPTO_UTILS.hash("") + "\r\n" +
                         "Content-Length: 0\r\n" +
                         "\r\n"
         );

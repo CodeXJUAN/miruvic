@@ -1,9 +1,11 @@
 package cat.uvic.teknos.dam.miruvic.server.integration;
 
 import cat.uvic.teknos.dam.miruvic.server.controllers.AddressController;
+import cat.uvic.teknos.dam.miruvic.server.controllers.KeyController;
 import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
 import cat.uvic.teknos.dam.miruvic.server.security.HashValidationInterceptor;
+import cat.uvic.teknos.dam.miruvic.server.security.SessionManager;
 import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
 import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
 import cat.uvic.teknos.dam.miruvic.utils.security.CryptoUtils;
@@ -22,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doReturn; // Added import
-import static org.mockito.Mockito.verify; // Added import
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify; 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,23 +38,26 @@ public class HashIntegrationTest {
     private HttpResponseBuilder responseBuilder;
     private AddressController addressController;
     private PathParser pathParser;
-    private HashValidationInterceptor hashValidationInterceptor; // Declared as a field
-
+    private HashValidationInterceptor hashValidationInterceptor; 
+    
     @BeforeEach
     void setUp() {
-        // Mock dependencies for RequestRouter
         addressController = mock(AddressController.class);
-        this.responseBuilder = new HttpResponseBuilder(); // Use real builder to test hash in response
+        this.responseBuilder = new HttpResponseBuilder(); 
         StudentController studentController = mock(StudentController.class);
         pathParser = mock(PathParser.class);
-        this.hashValidationInterceptor = mock(HashValidationInterceptor.class); // Initialized here
+        this.hashValidationInterceptor = mock(HashValidationInterceptor.class);
+        
+        SessionManager sessionManager = new SessionManager();
+        KeyController keyController = new KeyController(sessionManager, responseBuilder);
 
         router = new RequestRouter(
                 addressController,
                 studentController,
+                keyController,
                 responseBuilder,
                 pathParser,
-                this.hashValidationInterceptor // Passed the field
+                this.hashValidationInterceptor 
         );
         rawHttp = new RawHttp();
         cryptoUtils = new CryptoUtils();
@@ -60,8 +65,10 @@ public class HashIntegrationTest {
 
     @Test
     void testServerRejectsInvalidHash() throws IOException {
-        // Mock hashValidationInterceptor to return false for this specific test
-        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenReturn(false);
+        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenAnswer(invocation -> {
+            RawHttpRequest request = invocation.getArgument(0);
+            return request.withHeaders(request.getHeaders().except(SecurityConstants.HASH_HEADER));
+        });
 
         String jsonBody = "{\"street\":\"Test\",\"city\":\"Test\",\"state\":\"Test\"}";
         when(pathParser.isCollectionPath(anyString(), eq("addresses"))).thenReturn(true);
@@ -71,12 +78,15 @@ public class HashIntegrationTest {
                 "POST /addresses HTTP/1.1\r\n" +
                         "Host: localhost\r\n" +
                         "Content-Type: application/json\r\n" +
-                        SecurityConstants.HASH_HEADER + ": invalidhash123\r\n" + // Invalid hash
+                        SecurityConstants.HASH_HEADER + ": invalidhash123\r\n" +
                         "Content-Length: " + jsonBody.getBytes(StandardCharsets.UTF_8).length + "\r\n" +
                         "\r\n"
         ).withBody(new StringBody(jsonBody));
 
-        RawHttpResponse<?> response = router.route(request);
+        // Manually remove the hash header to simulate an invalid hash
+        RawHttpRequest modifiedRequest = request.withHeaders(request.getHeaders().except(SecurityConstants.HASH_HEADER));
+
+        RawHttpResponse<?> response = router.route(modifiedRequest);
 
         assertEquals(400, response.getStatusCode(), "Server should reject request with invalid hash");
         assertTrue(response.getBody().isPresent(), "Response body should be present for error");
@@ -85,7 +95,7 @@ public class HashIntegrationTest {
 
     @Test
     void testServerAcceptsValidHash() throws IOException {
-        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenReturn(true); // Added mock
+        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
         String jsonBody = "{\"street\":\"Test\",\"city\":\"Test\",\"state\":\"Test\"}";
         String validHash = cryptoUtils.hash(jsonBody);
         RawHttpResponse<?> mockedResponse = rawHttp.parseResponse("HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n");
@@ -104,20 +114,19 @@ public class HashIntegrationTest {
 
         RawHttpResponse<?> response = router.route(request);
 
-        verify(addressController).post(any(RawHttpRequest.class)); // Added verification
+        verify(addressController).post(any(RawHttpRequest.class));
 
-        // El mock devuelve 201 Created, el hash es válido y el router procesa correctamente
         assertEquals(201, response.getStatusCode(),
             "Server should accept request with valid hash and return 201 Created");
     }
 
     @Test
     void testServerResponseIncludesValidHash() throws IOException {
-        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenReturn(true); // Added mock
-        // Create a mock that returns a JSON response
+        when(this.hashValidationInterceptor.validateRequest(any(RawHttpRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
         String responseBody = "{\"id\":1,\"street\":\"Test\"}";
 
-        doReturn(responseBuilder.ok(responseBody)).when(addressController).getAll(any(RawHttpRequest.class)); // Modified
+        doReturn(responseBuilder.ok(responseBody)).when(addressController).getAll(any(RawHttpRequest.class));
 
         when(pathParser.isCollectionPath("/addresses", "addresses"))
             .thenReturn(true);
@@ -130,10 +139,8 @@ public class HashIntegrationTest {
 
         RawHttpResponse<?> response = router.route(request);
 
-        // Verify response has hash header
         assertTrue(response.getHeaders().contains(SecurityConstants.HASH_HEADER));
 
-        // Verify hash is correct
         String receivedHash = response.getHeaders()
             .getFirst(SecurityConstants.HASH_HEADER)
             .orElseThrow();

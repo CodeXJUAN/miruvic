@@ -29,3 +29,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.36")
     testImplementation("org.mockito:mockito-core:5.11.0")
 }
+
+tasks.test {
+    useJUnitPlatform()
+}

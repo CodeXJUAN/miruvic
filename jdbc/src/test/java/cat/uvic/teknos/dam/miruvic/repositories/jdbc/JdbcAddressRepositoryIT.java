@@ -84,7 +84,7 @@ class JdbcAddressRepositoryIT {
         repository.delete(address);
 
         Address deleted = repository.get(address.getId());
-        assertTrue(deleted.getId() == 0 || deleted.getStreet() == null || deleted.getStreet().isEmpty());
+        assertNull(deleted, "Address should be null after deletion");
     }
 
     @Test

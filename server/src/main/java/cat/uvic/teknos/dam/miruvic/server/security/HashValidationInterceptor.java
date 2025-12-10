@@ -1,47 +1,49 @@
 package cat.uvic.teknos.dam.miruvic.server.security;
 
+import cat.uvic.teknos.dam.miruvic.server.exceptions.HttpException;
 import cat.uvic.teknos.dam.miruvic.utils.security.CryptoUtils;
 import cat.uvic.teknos.dam.miruvic.utils.security.SecurityConstants;
 import rawhttp.core.RawHttpRequest;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class HashValidationInterceptor {
-    
+
     private final CryptoUtils cryptoUtils;
-    
+
     public HashValidationInterceptor() {
         this.cryptoUtils = new CryptoUtils();
     }
-    
-    public boolean validateRequest(RawHttpRequest request) {
-        // Skip validation for GET requests (no body)
-        if (request.getMethod().equals("GET") || 
-            request.getMethod().equals("DELETE")) {
-            return true;
+
+    public void validateRequest(RawHttpRequest request) throws HttpException {
+        if (request.getMethod().equals("GET") || request.getMethod().equals("DELETE")) {
+            return;
         }
-        
+
+        if (!request.getHeaders().contains(SecurityConstants.HASH_HEADER)) {
+            return;
+        }
+
+        Optional<String> clientHashOpt = request.getHeaders().getFirst(SecurityConstants.HASH_HEADER);
+        if (clientHashOpt.isEmpty()) {
+            throw new HttpException(400, "Missing message hash");
+        }
+
         if (!request.getBody().isPresent()) {
-            return true; // No body, no validation needed
+            throw new HttpException(400, "Request body is missing");
         }
-        
-        String receivedHash = request.getHeaders()
-            .getFirst(SecurityConstants.HASH_HEADER)
-            .orElse(null);
-        
-        if (receivedHash == null) {
-            return false; // Hash header missing
-        }
-        
+
         try {
-            byte[] bodyBytes = request.getBody().get()
-                .decodeBody();
-            String computedHash = cryptoUtils.hash(bodyBytes);
-            
-            return computedHash.equals(receivedHash);
+            String body = request.getBody().get().decodeBodyToString(StandardCharsets.UTF_8);
+            String serverHash = cryptoUtils.hash(body);
+
+            if (!serverHash.equals(clientHashOpt.get())) {
+                throw new HttpException(400, "Invalid message hash");
+            }
         } catch (IOException e) {
-            System.err.println("Error decoding request body for hash validation: " + e.getMessage());
-            return false;
+            throw new HttpException(500, "Error reading request body");
         }
     }
 }

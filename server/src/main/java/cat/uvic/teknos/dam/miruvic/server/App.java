@@ -4,11 +4,13 @@ import cat.uvic.teknos.dam.miruvic.jdbc.repositories.JdbcRepositoryFactory;
 import cat.uvic.teknos.dam.miruvic.repositories.AddressRepository;
 import cat.uvic.teknos.dam.miruvic.repositories.StudentRepository;
 import cat.uvic.teknos.dam.miruvic.server.controllers.AddressController;
+import cat.uvic.teknos.dam.miruvic.server.controllers.KeyController;
 import cat.uvic.teknos.dam.miruvic.server.controllers.StudentController;
 import cat.uvic.teknos.dam.miruvic.server.factories.DefaultModelFactory;
 import cat.uvic.teknos.dam.miruvic.server.factories.ModelFactory;
 import cat.uvic.teknos.dam.miruvic.server.routing.RequestRouter;
 import cat.uvic.teknos.dam.miruvic.server.security.HashValidationInterceptor;
+import cat.uvic.teknos.dam.miruvic.server.security.SessionManager;
 import cat.uvic.teknos.dam.miruvic.server.utils.HttpResponseBuilder;
 import cat.uvic.teknos.dam.miruvic.server.utils.JsonRequestParser;
 import cat.uvic.teknos.dam.miruvic.server.utils.PathParser;
@@ -66,9 +68,16 @@ public class App {
             );
             System.out.println("v Controllers initialized (Address, Student)");
 
+            SessionManager sessionManager = new SessionManager();
+            System.out.println("v Session manager initialized");
+
+            KeyController keyController = new KeyController(sessionManager, responseBuilder);
+            System.out.println("v Key controller initialized");
+
             RequestRouter router = new RequestRouter(
                     addressController,
                     studentController,
+                    keyController,
                     responseBuilder,
                     pathParser,
                     hashValidationInterceptor

@@ -318,28 +318,31 @@ public class AddressService {
     }
 
     private void validateResponseHash(RawHttpResponse<?> response) {
-        if (!response.getBody().isPresent()) {
-            return; // No body to validate
-        }
-        
         String receivedHash = response.getHeaders()
-            .getFirst(SecurityConstants.HASH_HEADER)
-            .orElse(null);
-        
+                .getFirst(SecurityConstants.HASH_HEADER)
+                .orElse(null);
+
         if (receivedHash == null) {
             throw new RuntimeException("Server response missing hash header");
         }
-        
+
         try {
-            String body = response.getBody().get()
-                .decodeBodyToString(StandardCharsets.UTF_8);
+            String body = response.getBody().map(b -> {
+                try {
+                    return b.decodeBodyToString(StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).orElse("");
+
             String computedHash = cryptoUtils.hash(body);
-            
+
             if (!computedHash.equals(receivedHash)) {
                 throw new RuntimeException("Response hash validation failed");
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error decoding response body for hash validation", e);
         }
     }
 }
+

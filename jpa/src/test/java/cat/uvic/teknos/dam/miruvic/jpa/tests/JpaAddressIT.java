@@ -141,6 +141,7 @@ public class JpaAddressIT {
     public void testFindByPostalCode() {
         List<Address> addresses = addressRepository.findByPostalCode("08001");
         assertNotNull(addresses, "La lista de direcciones no debería ser nula");
+        assertFalse(addresses.isEmpty(), "La lista de direcciones no debería estar vacía");
     }
 
     @Test
@@ -162,6 +163,11 @@ public class JpaAddressIT {
                         "SELECT s FROM JpaStudent s WHERE s.address.id = :addressId", JpaStudent.class)
                 .setParameter("addressId", savedAddressId)
                 .getResultList();
+
+        // Eliminar los estudiantes que usan la dirección
+        for (JpaStudent student : students) {
+            entityManager.remove(student);
+        }
 
         entityManager.getTransaction().commit();
 

@@ -9,9 +9,8 @@ import java.util.UUID;
 public class SessionManager {
     
     private final CryptoUtils cryptoUtils;
-    private final Map<String, ClientSession> sessions;
-    
-    public SessionManager() {
+    private final Map<String, ServerSideSession> sessions;
+    ublic SessionManager() {
         this.cryptoUtils = new CryptoUtils();
         this.sessions = new HashMap<>();
     }
@@ -23,7 +22,7 @@ public class SessionManager {
         String encryptedKey = cryptoUtils.asymmetricEncrypt(clientAlias, secretKey);
         
         String sessionId = UUID.randomUUID().toString();
-        sessions.put(sessionId, new ClientSession(clientNumber, secretKey));
+        sessions.put(sessionId, new ServerSideSession(clientNumber, secretKey));
         
         return encryptedKey;
     }
@@ -31,7 +30,7 @@ public class SessionManager {
     public String getSecretKey(String clientNumber) {
         return sessions.values().stream()
             .filter(session -> session.getClientNumber().equals(clientNumber))
-            .map(ClientSession::getSecretKey)
+            .map(ServerSideSession::getSecretKey)
             .findFirst()
             .orElse(null);
     }
@@ -52,12 +51,12 @@ public class SessionManager {
         return java.util.Base64.getEncoder().encodeToString(key);
     }
     
-    private static class ClientSession {
+    private static class ServerSideSession {
         private final String clientNumber;
         private final String secretKey;
         private final long createdAt;
         
-        public ClientSession(String clientNumber, String secretKey) {
+        public ServerSideSession(String clientNumber, String secretKey) {
             this.clientNumber = clientNumber;
             this.secretKey = secretKey;
             this.createdAt = System.currentTimeMillis();
